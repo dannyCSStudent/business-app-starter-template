@@ -1,332 +1,206 @@
-# AGENTS.md — LENS Business App Template Development Guide
+# SYSTEM_ROADMAP.md — Small Business Client Tracker Build Plan
 
-This document defines architecture rules and development instructions for AI coding agents working inside this repository.
+This document defines the execution roadmap for AI agents working inside this repository.
 
-Agents must read this file before making any modifications.
+Agents must follow tasks in order.
 
----
+Agents must NOT skip steps.
 
-# Project Overview
-
-This repository contains a TurboRepo-based AI Business App Starter Template used to generate production-grade applications for small businesses.
-
-The first application being built from this template is:
-
-Small Business Client Tracker CRM
-
-The goal is to produce the most advanced small-business client tracking system available in its category.
-
-The system must support:
-
-* mobile interface
-* web dashboard
-* FastAPI backend
-* Supabase database
-* AI-assisted workflow intelligence
-* scalable reusable architecture
-
-Agents must extend the system without breaking the template structure.
-
-Agents must NOT delete existing working infrastructure.
+Agents must NOT refactor working infrastructure unless instructed.
 
 ---
 
-# Technology Stack
+# Project Goal
 
-Frontend Mobile:
-Expo + React Native + NativeWind
+Build the most advanced small-business Client Tracker CRM available as a reusable TurboRepo template.
 
-Frontend Web:
-Next.js
+The finished system must support:
 
-Backend:
-FastAPI (Python)
+mobile usage
 
-Database:
-Supabase
+web dashboard analytics
 
-Monorepo:
-TurboRepo
+Supabase authentication
 
-Package Manager:
-pnpm only
+timeline interaction tracking
 
-Agents must NOT introduce npm or yarn.
+AI workflow intelligence
+
+team collaboration readiness
+
+template reuse for future client systems
 
 ---
 
-# Repository Structure Rules
+# Phase 0 — Infrastructure Validation
 
-Agents must preserve this structure:
+Objective:
 
-apps/
-mobile/
-web/
-api/
+Ensure baseline template runs correctly before feature development begins.
 
-packages/
-ui/
-types/
-config/
-database/
+Tasks:
 
-Agents must not move files across boundaries unless explicitly instructed.
+Verify FastAPI server starts successfully
 
-Shared logic belongs in packages/.
+Verify Supabase connection works
 
-Application-specific logic belongs in apps/.
+Verify environment variables load correctly
 
----
+Verify Expo mobile app launches
 
-# Backend Architecture Rules
+Verify web dashboard launches
 
-Backend lives inside:
+Verify TurboRepo workspace builds correctly
 
-apps/api/
+Completion Criteria:
 
-Agents must:
+apps/api runs without errors
 
-* keep route logic modular
-* place DB connectors inside app/db/
-* place config inside app/core/
-* place routers inside app/routes/
-* place schemas inside app/models/
+apps/mobile launches simulator
 
-Agents must NOT place database logic inside route files.
-
-All DB access must use:
-
-app/db/supabase_client.py
+apps/web loads homepage
 
 ---
 
-# Supabase Rules
+# Phase 1 — Database Schema Design
 
-Supabase is the primary datastore.
+Objective:
 
-Agents must:
+Create production-ready CRM schema.
 
-* use service role key only in backend
-* never expose service role key to frontend
-* implement typed CRUD endpoints
-* design schema migrations safely
+Agents must create tables:
 
-Tables must include:
+clients
+
+client_activity
+
+users_roles
+
+tags
+
+client_tags
+
+---
+
+## Table: clients
+
+Fields:
+
+id (uuid primary key)
+
+name
+
+email
+
+phone
+
+status
+
+notes
+
+last_contacted_at
+
+owner_user_id
 
 created_at
+
 updated_at
 
-when appropriate.
+Indexes required:
+
+email
+
+status
+
+owner_user_id
 
 ---
 
-# Frontend Architecture Rules
-
-Mobile app lives in:
-
-apps/mobile/
-
-Web app lives in:
-
-apps/web/
-
-Agents must:
-
-* reuse UI components from packages/ui
-* reuse types from packages/types
-* reuse configs from packages/config
-
-Agents must not duplicate components across apps.
-
----
-
-# Shared Packages Rules
-
-packages/ui
-
-Reusable UI components shared across mobile and web.
-
-packages/types
-
-Shared TypeScript interfaces.
-
-packages/config
-
-Shared environment config utilities.
-
-packages/database
-
-Database schema definitions if required later.
-
-Agents must centralize shared logic here.
-
----
-
-# Authentication Requirements
-
-System must support:
-
-Supabase Auth
-
-Agents must implement:
-
-* login
-* signup
-* session persistence
-* protected routes
-* role-based access control
-
-Roles required:
-
-admin
-staff
-viewer
-
----
-
-# AI Intelligence Layer Requirements
-
-This application must include AI-assisted workflow features.
-
-Agents must implement:
-
-client note summarization
-
-lead priority suggestions
-
-follow-up reminders
-
-activity insight generation
-
-AI endpoints must live inside:
-
-app/routes/ai/
-
-Agents must not mix AI logic with CRUD endpoints.
-
----
-
-# Client Tracker CRM Requirements
-
-Agents must implement:
-
-Client entity system
+## Table: client_activity
 
 Fields:
 
 id
-name
-phone
-email
-status
+
+client_id
+
+interaction_type
+
 notes
-tags
-last_contacted_at
-created_at
-updated_at
 
-Status options:
+timestamp
 
-lead
-active
-inactive
-customer
-completed
+created_by
 
-Agents must create CRUD endpoints for clients.
+Indexes required:
+
+client_id
+
+timestamp
 
 ---
 
-# Activity Tracking System
-
-Agents must implement:
-
-client interaction logging
+## Table: users_roles
 
 Fields:
 
-interaction_type
-notes
-timestamp
+user_id
 
-Examples:
+role
 
-call
-email
-meeting
-follow-up
+Roles allowed:
 
-This system supports timeline intelligence features later.
+admin
 
----
+staff
 
-# Search System Requirements
-
-Agents must implement:
-
-full-text client search
-
-status filtering
-
-tag filtering
-
-date filtering
-
-Search must scale.
+viewer
 
 ---
 
-# Dashboard Requirements
+## Table: tags
 
-Agents must implement:
+Fields:
 
-client statistics panel
+id
 
-recent activity panel
+name
 
-lead conversion insights
-
-follow-up reminders
+color
 
 ---
 
-# Mobile App Requirements
+## Table: client_tags
 
-Mobile app must support:
+Fields:
 
-client list screen
+client_id
 
-client detail screen
-
-add client screen
-
-edit client screen
-
-activity timeline screen
-
-AI summary panel
+tag_id
 
 ---
 
-# Web Dashboard Requirements
+Completion Criteria:
 
-Web dashboard must support:
+Tables created
 
-admin analytics
+Indexes created
 
-team usage overview
-
-lead pipeline visualization
-
-activity insights
+Relations verified
 
 ---
 
-# API Endpoint Requirements
+# Phase 2 — Backend Client API
+
+Objective:
+
+Build scalable CRUD endpoints.
 
 Agents must implement:
 
 GET /clients
+
+GET /clients/{id}
 
 POST /clients
 
@@ -336,122 +210,312 @@ DELETE /clients/{id}
 
 GET /clients/search
 
+Requirements:
+
+Pagination required
+
+Filtering required
+
+Status filtering required
+
+Tag filtering required
+
+Date filtering required
+
+---
+
+# Phase 3 — Activity Timeline API
+
+Objective:
+
+Enable interaction intelligence tracking.
+
+Agents must implement:
+
 GET /clients/{id}/activity
 
 POST /clients/{id}/activity
+
+PATCH /activity/{id}
+
+DELETE /activity/{id}
+
+Interaction types allowed:
+
+call
+
+email
+
+meeting
+
+note
+
+follow_up
+
+---
+
+# Phase 4 — Authentication System
+
+Objective:
+
+Secure multi-user CRM environment.
+
+Agents must implement:
+
+Supabase Auth integration
+
+Login screen
+
+Signup screen
+
+Session persistence
+
+Protected routes
+
+Role middleware
+
+Role enforcement inside API routes
+
+---
+
+# Phase 5 — Mobile Client Tracker UI
+
+Objective:
+
+Deliver demo-ready mobile CRM experience.
+
+Agents must implement:
+
+Client List Screen
+
+Client Detail Screen
+
+Add Client Screen
+
+Edit Client Screen
+
+Delete Client Action
+
+Client Activity Timeline Screen
+
+Tag assignment UI
+
+Follow-up reminder indicator
+
+Completion Criteria:
+
+Mobile app fully usable for client tracking
+
+---
+
+# Phase 6 — Smart Search System
+
+Objective:
+
+Deliver fast business-grade filtering.
+
+Agents must implement:
+
+Search by name
+
+Search by email
+
+Search by phone
+
+Filter by tag
+
+Filter by status
+
+Filter by last_contacted_at
+
+Sort by recent activity
+
+Sort alphabetically
+
+---
+
+# Phase 7 — AI Workflow Intelligence Layer
+
+Objective:
+
+Create premium differentiation feature.
+
+Agents must implement endpoints:
 
 POST /ai/summarize-client-notes
 
 POST /ai/suggest-followups
 
+POST /ai/activity-insights
+
+AI must support:
+
+conversation summarization
+
+recommended next action
+
+priority detection
+
+relationship strength estimation
+
 ---
 
-# Performance Requirements
+# Phase 8 — Dashboard Analytics Engine
+
+Objective:
+
+Deliver business intelligence layer.
+
+Agents must implement endpoints:
+
+GET /analytics/client-count
+
+GET /analytics/conversion-rate
+
+GET /analytics/followups-due
+
+GET /analytics/activity-volume
+
+GET /analytics/team-performance
+
+---
+
+# Phase 9 — Web Dashboard Interface
+
+Objective:
+
+Create admin control center.
+
+Agents must implement:
+
+Client pipeline overview
+
+Activity heatmap
+
+Recent interactions panel
+
+Follow-up reminders panel
+
+Team performance panel
+
+Conversion insights panel
+
+---
+
+# Phase 10 — Notification System
+
+Objective:
+
+Improve retention and engagement.
+
+Agents must implement:
+
+Follow-up reminder notifications
+
+Activity alerts
+
+Assignment alerts
+
+Future support:
+
+push notifications
+
+email reminders
+
+---
+
+# Phase 11 — Role-Based Permissions Engine
+
+Objective:
+
+Support multi-team deployment readiness.
+
+Agents must enforce:
+
+admin full access
+
+staff limited modification access
+
+viewer read-only access
+
+API endpoints must enforce role access
+
+---
+
+# Phase 12 — Performance Optimization
+
+Objective:
+
+Prepare production-scale deployment readiness.
 
 Agents must:
 
-paginate client results
+Add DB indexes where missing
 
-optimize DB queries
+Add pagination everywhere required
 
-avoid loading full tables
+Avoid N+1 queries
 
-use indexed filtering fields
+Cache analytics queries if necessary
 
----
-
-# Safety Rules
-
-Agents must NOT:
-
-delete infrastructure files
-
-modify environment loading system
-
-replace Supabase with another DB
-
-replace FastAPI with another backend
-
-switch package manager
-
-remove TurboRepo structure
+Optimize search queries
 
 ---
 
-# Code Quality Requirements
+# Phase 13 — Template Conversion Mode
+
+Objective:
+
+Convert CRM into reusable generator template.
 
 Agents must:
 
-write typed code
+Move shared logic into packages/
 
-create modular routers
+Extract reusable UI components
 
-create reusable services
+Extract reusable DB schema patterns
 
-separate business logic from transport layer
+Extract reusable API services
 
----
-
-# Task Execution Plan
-
-Agents must complete tasks in order:
-
-Task 1:
-
-Create client database schema
-
-Task 2:
-
-Create CRUD client API
-
-Task 3:
-
-Create activity tracking schema
-
-Task 4:
-
-Create activity tracking API
-
-Task 5:
-
-Create AI summary endpoint
-
-Task 6:
-
-Create mobile client list screen
-
-Task 7:
-
-Create mobile client detail screen
-
-Task 8:
-
-Create dashboard analytics endpoint
-
-Task 9:
-
-Create web dashboard UI
-
-Task 10:
-
-Create search system
+Ensure new systems can be created from template easily
 
 ---
 
-# Long-Term System Vision
+# Phase 14 — Demo Readiness Mode
 
-This repository will become:
+Objective:
 
-a reusable AI-powered internal tools generator
+Prepare portfolio-grade showcase system.
 
-for building:
+Agents must ensure:
 
-CRM systems
+seed demo client data exists
 
-booking systems
+seed demo activity history exists
 
-inventory systems
+analytics panels show realistic data
 
-automation dashboards
+mobile app usable without configuration friction
 
-agents must maintain template compatibility at all times
+web dashboard visually complete
+
+---
+
+# Final Completion Criteria
+
+System qualifies as complete when:
+
+mobile CRM works end-to-end
+
+web dashboard analytics functional
+
+AI insights operational
+
+Supabase auth working
+
+timeline tracking operational
+
+search system production-ready
+
+template reusable for future builds
