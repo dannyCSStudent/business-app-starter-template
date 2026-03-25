@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    ".": "./src/index.ts",
     "./*": "./src/*.tsx"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings 0",
+    "lint": "../../node_modules/.bin/eslint --config eslint.config.mjs . --max-warnings 0",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "check-types": "../../node_modules/.bin/tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -20,6 +21,7 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "@repo/types": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   }

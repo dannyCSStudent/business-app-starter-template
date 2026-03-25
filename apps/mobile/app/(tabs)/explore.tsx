@@ -1,112 +1,282 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Link } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { BadgePill } from '@/components/crm/badge-pill';
+import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
+import { CRMHero } from '@/components/crm/crm-hero';
+import { FilterChip } from '@/components/crm/filter-chip';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
+import { useCRMDataSyncRefresh } from '@/hooks/use-crm-sync-refresh';
+import { useFallbackRefresh } from '@/hooks/use-fallback-refresh';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import {
+  apiBaseUrl,
+  ClientActivity,
+  ClientInteractionType,
+  ClientSummary,
+  fallbackActivity,
+  fallbackClientSummaries,
+  fetchJson,
+} from '@/lib/crm';
 
-export default function TabTwoScreen() {
+const interactionFilters: { label: string; value: ClientInteractionType | 'all' }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Follow Up', value: 'follow_up' },
+  { label: 'Call', value: 'call' },
+  { label: 'Email', value: 'email' },
+  { label: 'Meeting', value: 'meeting' },
+  { label: 'Note', value: 'note' },
+];
+
+function useActivityFeed() {
+  const fallbackFeed = useMemo(
+    () => ({
+      activity: fallbackActivity,
+      clients: fallbackClientSummaries,
+    }),
+    [],
+  );
+  const loadFeed = useCallback(
+    async () => ({
+      activity: await fetchJson<ClientActivity[]>('/activity/'),
+      clients: await fetchJson<ClientSummary[]>('/clients/'),
+    }),
+    [],
+  );
+  const { data, error, isFallback, isRefreshing, refresh } = useFallbackRefresh({
+    autoLoad: true,
+    errorMessage: 'Unable to refresh activity. Showing fallback feed.',
+    fallbackData: fallbackFeed,
+    load: loadFeed,
+  });
+
+  return {
+    clients: data.clients,
+    activity: data.activity,
+    isFallback,
+    isRefreshing,
+    error,
+    refresh,
+  };
+}
+
+export default function ActivityScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+  const [query, setQuery] = useState('');
+  const [selectedType, setSelectedType] = useState<ClientInteractionType | 'all'>('all');
+  const { clients, activity, isFallback, isRefreshing, error, refresh } = useActivityFeed();
+  useCRMDataSyncRefresh(refresh);
+
+  const followUpCount = activity.filter((item) => item.interaction_type === 'follow_up').length;
+  const today = new Date();
+  const recentCount = activity.filter((item) => {
+    const timestamp = new Date(item.timestamp);
+    return today.getTime() - timestamp.getTime() <= 1000 * 60 * 60 * 24 * 7;
+  }).length;
+
+  const filteredActivity = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return activity.filter((item) => {
+      const clientName = clients.find((client) => client.id === item.client_id)?.name ?? '';
+      const matchesQuery =
+        !normalizedQuery ||
+        `${clientName} ${item.notes ?? ''} ${item.interaction_type}`
+          .toLowerCase()
+          .includes(normalizedQuery);
+      const matchesType = selectedType === 'all' || item.interaction_type === selectedType;
+      return matchesQuery && matchesType;
+    });
+  }, [activity, clients, query, selectedType]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
+    <ScrollView
+      style={[styles.screen, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}>
+      <CRMHero
+        backgroundColor="#E7EDF7"
+        badge={
+          <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
+          {isFallback ? 'Fallback feed' : 'Live activity'}
+          </BadgePill>
+        }
+        copy="Recent CRM work with quick filtering for follow-up and recent interactions."
+        metrics={[
+          { label: 'Follow Ups', tone: 'dark', value: followUpCount },
+          { label: 'Last 7 Days', value: recentCount },
+        ]}
+        title="Activity"
+      />
+
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search by client, type, or note"
+        placeholderTextColor="#94A3B8"
+        style={[
+          styles.searchInput,
+          {
+            color: colors.text,
+            borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
+            backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
+          },
+        ]}
+      />
+
+      <View style={styles.filterRow}>
+        {interactionFilters.map((filter) => {
+          const isSelected = selectedType === filter.value;
+
+          return (
+            <FilterChip
+              key={filter.value}
+              label={filter.label}
+              onPress={() => setSelectedType(filter.value)}
+              selected={isSelected}
+            />
+          );
         })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </View>
+
+      <ThemedText style={styles.resultCount}>
+        Showing {filteredActivity.length} of {activity.length} entries
+      </ThemedText>
+      <ConnectionDiagnostics
+        apiBaseUrl={apiBaseUrl}
+        isFallback={isFallback}
+        label="Activity Feed"
+      />
+      <Link href="/modal" style={styles.quickActionLink}>
+        <ThemedText style={styles.quickActionLinkText}>Open Quick Actions</ThemedText>
+      </Link>
+      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+
+      {filteredActivity.map((item) => {
+        const clientName =
+          clients.find((client) => client.id === item.client_id)?.name ?? 'Unknown client';
+
+        return (
+          <ThemedView key={item.id} style={styles.activityCard}>
+            <View style={styles.activityHeader}>
+              <View style={styles.activityText}>
+                <ThemedText type="defaultSemiBold">{clientName}</ThemedText>
+                <ThemedText style={styles.activityType}>
+                  {item.interaction_type.replace('_', ' ')}
+                </ThemedText>
+              </View>
+              <ThemedText style={styles.activityDate}>
+                {new Date(item.timestamp).toLocaleDateString()}
+              </ThemedText>
+            </View>
+            <ThemedText style={styles.activityNotes}>
+              {item.notes ?? 'No notes attached.'}
+            </ThemedText>
+            <Link href={{ pathname: '/client/[id]', params: { id: item.client_id } }} style={styles.detailLink}>
+              <ThemedText style={styles.detailLinkText}>Open client workspace</ThemedText>
+            </Link>
+          </ThemedView>
+        );
+      })}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  screen: {
+    flex: 1,
   },
-  titleContainer: {
+  content: {
+    padding: 20,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  badgeWarn: {
+    backgroundColor: '#FEF3C7',
+    color: '#92400E',
+  },
+  badgeOk: {
+    backgroundColor: '#DCFCE7',
+    color: '#166534',
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+  },
+  filterRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+  },
+  resultCount: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  quickActionLink: {
+    alignSelf: 'flex-start',
+  },
+  quickActionLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
+    textTransform: 'uppercase',
+  },
+  errorText: {
+    fontSize: 13,
+    color: '#B91C1C',
+  },
+  activityCard: {
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(15,23,42,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    gap: 10,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  activityText: {
+    flex: 1,
+    gap: 4,
+  },
+  activityType: {
+    fontSize: 12,
+    color: '#64748B',
+    textTransform: 'capitalize',
+  },
+  activityDate: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  activityNotes: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#475569',
+  },
+  detailLink: {
+    alignSelf: 'flex-start',
+  },
+  detailLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
+    textTransform: 'uppercase',
   },
 });

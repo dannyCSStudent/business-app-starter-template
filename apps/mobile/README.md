@@ -1,50 +1,65 @@
-# Welcome to your Expo app 👋
+# Mobile App Notes
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This Expo app talks to the FastAPI backend, not directly to Supabase.
 
-## Get started
+## API Connection
 
-1. Install dependencies
+The mobile app resolves its API base URL in this order:
 
-   ```bash
-   npm install
-   ```
+1. Platform-specific override:
+   - `EXPO_PUBLIC_API_URL_ANDROID`
+   - `EXPO_PUBLIC_API_URL_IOS`
+   - `EXPO_PUBLIC_API_URL_WEB`
+2. `EXPO_PUBLIC_API_URL`
+3. The Expo dev host, rewritten to `http://<your-machine-ip>:8000`
+4. Fallback: `http://127.0.0.1:8000`
 
-2. Start the app
+That means:
 
-   ```bash
-   npx expo start
-   ```
+- iOS simulator on the same Mac can often use `127.0.0.1:8000`
+- Android emulator usually needs `10.0.2.2:8000`
+- A physical phone needs your computer's LAN IP, for example `http://192.168.1.25:8000`
 
-In the output, you'll find options to open the app in a
+## Recommended Local Setup
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Create `apps/mobile/.env`:
 
 ```bash
-npm run reset-project
+EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:8000
+EXPO_PUBLIC_API_URL_WEB=http://localhost:8000
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+For a physical phone, use your machine's LAN IP instead, for example:
 
-## Learn more
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.1.25:8000
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Then start the backend so it is reachable from your device:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+cd apps/api
+uv run fastapi dev app/main.py --host 0.0.0.0 --port 8000
+```
 
-## Join the community
+Or run your existing API workflow, as long as it listens on `0.0.0.0:8000` during device testing.
 
-Join our community of developers creating universal apps.
+## Start Mobile
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cd apps/mobile
+pnpm dev
+```
+
+If you change `EXPO_PUBLIC_API_URL`, restart Expo so the new public env var is picked up.
+
+## If You Still See Fallback Data
+
+Check these in order:
+
+1. Open `http://<your-api-host>:8000/health/` from the phone browser.
+2. Confirm the phone and laptop are on the same network.
+3. Confirm the API process is bound to `0.0.0.0`, not only `127.0.0.1`.
+4. Restart Expo after editing `.env`.
+5. If Android emulator is in use, try `EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:8000`.
+6. If Expo web is in use, try `EXPO_PUBLIC_API_URL_WEB=http://localhost:8000`.

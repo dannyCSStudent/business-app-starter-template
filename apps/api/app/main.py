@@ -1,16 +1,29 @@
-from fastapi import APIRouter, FastAPI
-from app.db.supabase_client import supabase
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes.activity import router as activity_router
+from app.routes.client_tags import router as client_tags_router
 from app.routes.health import router as health_router
 from app.routes.clients import router as clients_router
+from app.routes.tags import router as tags_router
 
-router = APIRouter()
 app = FastAPI()
 
-app.include_router(router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8081",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8081",
+    ],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(activity_router)
+app.include_router(client_tags_router)
 app.include_router(clients_router)
 app.include_router(health_router)
-
-@router.get("/db-test")
-def db_test():
-    response = supabase.table("clients").select("*").limit(1).execute()
-    return response.data
+app.include_router(tags_router)

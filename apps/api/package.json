@@ -1,0 +1,10 @@
+{
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "dev": "./.venv/bin/uvicorn app.main:app --reload",
+    "build": "./.venv/bin/python -m compileall app",
+    "lint": "./.venv/bin/python -m compileall app",
+    "check-types": "./.venv/bin/python -m compileall app"
+  }
+}

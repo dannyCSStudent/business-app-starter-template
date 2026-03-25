@@ -1,159 +1,159 @@
-# Turborepo starter
+# Business App Starter Template
 
-This Turborepo starter is maintained by the Turborepo core team.
+A full-stack CRM starter built as a Turborepo monorepo.
 
-## Using this example
+It includes:
 
-Run the following command:
+- `apps/api`: FastAPI backend backed by Supabase/PostgREST
+- `apps/web`: Next.js dashboard for CRM operations
+- `apps/mobile`: Expo app for mobile CRM workflows
+- `packages/types`: shared TypeScript domain models
+- `packages/ui`: shared UI components
 
-```sh
-npx create-turbo@latest
+## Features
+
+- client management with status, notes, contact details, and last-contact tracking
+- activity logging, editing, and deletion
+- tag creation, assignment, removal, and editing
+- shared web and mobile CRM workflows
+- mobile diagnostics for API and DB connectivity
+- Supabase schema included in-repo via `apps/api/schema.sql`
+
+## Tech Stack
+
+- Turborepo
+- pnpm workspaces
+- FastAPI
+- Supabase
+- Next.js
+- Expo / React Native
+- TypeScript
+
+## Repository Layout
+
+```text
+apps/
+  api/       FastAPI application and Supabase schema
+  mobile/    Expo mobile application
+  web/       Next.js web dashboard
+packages/
+  types/     Shared TypeScript CRM models
+  ui/        Shared UI components
 ```
 
-## What's inside?
+## Getting Started
 
-This Turborepo includes the following packages/apps:
+### 1. Install dependencies
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 2. Set up the API
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+Create the Python virtual environment and install backend dependencies as needed for `apps/api`.
+
+Apply the initial database schema in Supabase:
+
+```sql
+apps/api/schema.sql
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Start the API:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```bash
+cd apps/api
+./.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Without global `turbo`:
+### 3. Start the web app
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+cd apps/web
+pnpm dev
 ```
 
-### Develop
+If needed, set the API URL for web:
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-Without global `turbo`, use your package manager:
+### 4. Start the mobile app
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+Create `apps/mobile/.env` with platform-specific API hosts:
+
+```bash
+EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:8000
+EXPO_PUBLIC_API_URL_WEB=http://localhost:8000
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+For a physical device, use your machine's LAN IP instead of `localhost`:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.1.25:8000
 ```
 
-Without global `turbo`:
+Then run:
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+cd apps/mobile
+pnpm dev
 ```
 
-### Remote Caching
+## Root Scripts
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+From the repository root:
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+```bash
+pnpm dev
+pnpm lint
+pnpm check-types
+pnpm build
 ```
 
-Without global `turbo`, use your package manager:
+## Mobile Connectivity Notes
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+The mobile app talks to the FastAPI backend, not directly to Supabase.
+
+- Android emulator should use `http://10.0.2.2:8000`
+- Expo web should use `http://localhost:8000`
+- physical devices should use `http://<your-lan-ip>:8000`
+
+The mobile app includes an in-app diagnostics card that shows:
+
+- resolved API base URL
+- API `/health` status
+- DB `/health/db` status
+- whether the screen is using live data or fallback data
+
+## Current Product Surface
+
+### Web
+
+- CRM dashboard
+- client filtering and activity filtering
+- create, edit, and delete flows
+- inline status, tag, contact, and activity actions
+
+### Mobile
+
+- client feed
+- activity feed
+- client detail workspace
+- quick-actions modal for creating clients, logging activity, and managing tags
+- inline editing for client details and activity notes
+
+## Validation
+
+The repository is currently validated with:
+
+```bash
+pnpm lint
+pnpm check-types
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## Notes
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- The included schema and routes are intended as a strong starter, not a finished production CRM.
+- Supabase credentials and environment setup are project-specific and should be supplied per deployment environment.
