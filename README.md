@@ -1,159 +1,69 @@
 # Business App Starter Template
 
-A full-stack CRM starter built as a Turborepo monorepo.
+A polished, multi-platform CRM starter that wires together FastAPI, Supabase, Next.js, and Expo so you can demo a full workflow stack from one repo.
 
-It includes:
+## Highlights
 
-- `apps/api`: FastAPI backend backed by Supabase/PostgREST
-- `apps/web`: Next.js dashboard for CRM operations
-- `apps/mobile`: Expo app for mobile CRM workflows
-- `packages/types`: shared TypeScript domain models
-- `packages/ui`: shared UI components
+- **True full stack** – shared Supabase schema + FastAPI backend, responsive Next.js dashboard, and a touch-friendly Expo client all speaking the same CRM model.
+- **Demo-ready workflows** – clients, tags, and activity records display instantly thanks to the included seed data and synchronized dashboards/websocket-free edits.
+- **Operational confidence** – `/health` and `/health/db` endpoints, `pnpm check-health`, and the mobile diagnostics card prove the stack is wired before you present.
+- **Automation-first** – CI checks cover linting, type safety, seeding, and API health. A dedicated staging workflow runs the same suite plus a staging manifest so you can gate deployment branches.
 
-## Features
+## Architecture
 
-- client management with status, notes, contact details, and last-contact tracking
-- activity logging, editing, and deletion
-- tag creation, assignment, removal, and editing
-- shared web and mobile CRM workflows
-- mobile diagnostics for API and DB connectivity
-- Supabase schema included in-repo via `apps/api/schema.sql`
-
-## Tech Stack
-
-- Turborepo
-- pnpm workspaces
-- FastAPI
-- Supabase
-- Next.js
-- Expo / React Native
-- TypeScript
-
-## Repository Layout
-
-```text
+```
 apps/
-  api/       FastAPI application and Supabase schema
-  mobile/    Expo mobile application
-  web/       Next.js web dashboard
+  api/       FastAPI + Supabase glue (schema, seed script, diagnostics)
+  web/       Next.js CRM dashboard & portfolio shell
+  mobile/    Expo shell with client feed, detail workspace, and quick actions
 packages/
   types/     Shared TypeScript CRM models
-  ui/        Shared UI components
+  ui/        Shared UI building blocks
 ```
 
-## Getting Started
+## Getting started
 
-### 1. Install dependencies
+1. Install toolchain: `pnpm install` and ensure Python 3.11+ is available for the API virtual environment.
+2. Configure Supabase via `.env` (or your secrets store) with `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`, then apply `apps/api/schema.sql`.
+3. Seed sample rows: `pnpm seed` (optionally add `--drop` to wipe tables first). The command uses `apps/api/.venv/bin/python seed.py`, so the backend must be bootstrapped first.
+4. Start the backend:
+   ```bash
+   cd apps/api
+   python -m venv .venv
+   ./.venv/bin/pip install -r requirements.txt
+   ./.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+5. Start the web dashboard:
+   ```bash
+   cd apps/web
+   pnpm dev
+   ```
+   Set `NEXT_PUBLIC_API_URL=http://localhost:8000` if the web client needs a custom host.
+6. Start the mobile shell: create `apps/mobile/.env` with platform-specific API URLs (`EXPO_PUBLIC_API_URL_ANDROID`, `EXPO_PUBLIC_API_URL_WEB`, or `EXPO_PUBLIC_API_URL` for LAN devices) and run `pnpm --filter mobile dev`.
+7. Validate connectivity with `pnpm check-health` (hits `/health` and `/health/db`) or watch the mobile diagnostics card for the live/fallback mode and resolved API host.
 
-```bash
-pnpm install
-```
+## Workspace scripts
 
-### 2. Set up the API
+- `pnpm dev` – run all local dev servers via Turborepo.
+- `pnpm build` – builds every app/package.
+- `pnpm lint` – runs linters across the repo.
+- `pnpm check-types` – runs TypeScript/Static checks.
+- `pnpm seed` – runs `apps/api/seed.py` (see `apps/api/seed.py` for payloads).
+- `pnpm check-health` – utility script in `scripts/check-health.js` that pings your deployed API and DB health endpoints.
 
-Create the Python virtual environment and install backend dependencies as needed for `apps/api`.
+## Environment variables
 
-Apply the initial database schema in Supabase:
+- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` – required by the API + seed script.
+- `API_URL` or `NEXT_PUBLIC_API_URL` – consumed by the web dashboard and `pnpm check-health`.
+- `EXPO_PUBLIC_API_URL_ANDROID` / `_IOS` / `_WEB` / plain `EXPO_PUBLIC_API_URL` – determine how Expo resolves the backend on emulators, simulators, or physical devices (Android emulator should use `http://10.0.2.2:8000`, Expo web uses `http://localhost:8000`).
 
-```sql
-apps/api/schema.sql
-```
+## CI & staging automation
 
-Start the API:
+The repository now runs a reusable CI workflow (`.github/workflows/checks.yml`) that installs dependencies, seeds Supabase, boots FastAPI, and asserts `/health` + `/health/db` before every merge. The `CI` workflow (`.github/workflows/ci.yml`) triggers on pushes to `main`/`release/**` and on pull requests. The staging workflow (`.github/workflows/staging.yml`) invokes the same checks for the `staging` branch (and via manual dispatch), then produces a `staging-manifest` artifact to capture the commit/branch metadata that just passed the suite.
 
-```bash
-cd apps/api
-./.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+## Supporting docs
 
-### 3. Start the web app
+- `DEMO.md` – reproducible demo script you run for clients, including the portfolio shell at `/portfolio`.
+- `DEPLOYMENT.md` – checklist covering API, web, mobile, and monitoring for publishing the stack.
 
-```bash
-cd apps/web
-pnpm dev
-```
-
-If needed, set the API URL for web:
-
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### 4. Start the mobile app
-
-Create `apps/mobile/.env` with platform-specific API hosts:
-
-```bash
-EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:8000
-EXPO_PUBLIC_API_URL_WEB=http://localhost:8000
-```
-
-For a physical device, use your machine's LAN IP instead of `localhost`:
-
-```bash
-EXPO_PUBLIC_API_URL=http://192.168.1.25:8000
-```
-
-Then run:
-
-```bash
-cd apps/mobile
-pnpm dev
-```
-
-## Root Scripts
-
-From the repository root:
-
-```bash
-pnpm dev
-pnpm lint
-pnpm check-types
-pnpm build
-```
-
-## Mobile Connectivity Notes
-
-The mobile app talks to the FastAPI backend, not directly to Supabase.
-
-- Android emulator should use `http://10.0.2.2:8000`
-- Expo web should use `http://localhost:8000`
-- physical devices should use `http://<your-lan-ip>:8000`
-
-The mobile app includes an in-app diagnostics card that shows:
-
-- resolved API base URL
-- API `/health` status
-- DB `/health/db` status
-- whether the screen is using live data or fallback data
-
-## Current Product Surface
-
-### Web
-
-- CRM dashboard
-- client filtering and activity filtering
-- create, edit, and delete flows
-- inline status, tag, contact, and activity actions
-
-### Mobile
-
-- client feed
-- activity feed
-- client detail workspace
-- quick-actions modal for creating clients, logging activity, and managing tags
-- inline editing for client details and activity notes
-
-## Validation
-
-The repository is currently validated with:
-
-```bash
-pnpm lint
-pnpm check-types
-```
-
-## Notes
-
-- The included schema and routes are intended as a strong starter, not a finished production CRM.
-- Supabase credentials and environment setup are project-specific and should be supplied per deployment environment.
+Keep these guides handy when presenting the project or handing it off to another team—you can spin up the CRM/portfolio experience with a single set of scripts plus the documented environment values.

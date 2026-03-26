@@ -1,0 +1,81 @@
+name: Check suite
+
+on:
+  workflow_call:
+    secrets:
+      SUPABASE_URL:
+        required: true
+      SUPABASE_SERVICE_KEY:
+        required: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      API_URL: http://127.0.0.1:8000
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: pnpm
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare Python env
+        run: |
+          cd apps/api
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Run type checks
+        run: pnpm check-types
+
+      - name: Seed Supabase data
+        run: pnpm seed
+
+      - name: Start FastAPI
+        run: |
+          cd apps/api
+          .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          echo $! > /tmp/uvicorn.pid
+
+      - name: Wait for API
+        run: |
+          for i in {1..20}; do
+            if curl --silent --fail http://127.0.0.1:8000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          cat /tmp/uvicorn.log || true
+          exit 1
+
+      - name: Check health
+        run: pnpm check-health
+
+      - name: Tear down API
+        if: always()
+        run: |
+          if [ -f /tmp/uvicorn.pid ]; then
+            kill "$(cat /tmp/uvicorn.pid)" || true
+          fi

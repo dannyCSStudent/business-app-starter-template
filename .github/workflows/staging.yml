@@ -1,0 +1,56 @@
+name: Staging readiness
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    secrets:
+      SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL || secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_KEY || secrets.SUPABASE_SERVICE_KEY }}
+
+  capture-manifest:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: pnpm
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run build
+        run: pnpm build
+
+      - name: Create staging manifest
+        run: |
+          commit=$(git rev-parse --short HEAD)
+          timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          cat <<EOF > staging-manifest.json
+          {
+            "project": "business-app-starter-template",
+            "branch": "${GITHUB_REF_NAME}",
+            "commit": "${commit}",
+            "checkedAt": "${timestamp}"
+          }
+          EOF
+
+      - name: Upload staging manifest
+        uses: actions/upload-artifact@v3
+        with:
+          name: staging-manifest
+          path: staging-manifest.json
