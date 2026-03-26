@@ -85,8 +85,8 @@ export default function HomeScreen() {
           <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
             {isFallback ? 'Fallback data' : 'API connected'}
           </BadgePill>
-          <Link href="/modal" style={styles.quickActionLink}>
-            <ThemedText style={styles.quickActionLinkText}>Quick Actions</ThemedText>
+          <Link href="/actions/client" style={styles.quickActionLink}>
+            <ThemedText style={styles.quickActionLinkText}>Create Client</ThemedText>
           </Link>
         </View>
       </ThemedView>

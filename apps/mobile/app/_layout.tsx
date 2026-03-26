@@ -20,6 +20,18 @@ export default function RootLayout() {
           name="modal"
           options={{ presentation: 'modal', title: 'Quick Actions' }}
         />
+        <Stack.Screen
+          name="actions/client"
+          options={{ presentation: 'modal', title: 'Create Client' }}
+        />
+        <Stack.Screen
+          name="actions/activity"
+          options={{ presentation: 'modal', title: 'Log Activity' }}
+        />
+        <Stack.Screen
+          name="actions/tags"
+          options={{ presentation: 'modal', title: 'Manage Tags' }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Client, ClientActivity, ClientTag, ClientTagAssignment } from "@repo/types";
 import { ClientDashboard } from "./client-dashboard";
 import { ActivityDashboard } from "./activity-dashboard";
@@ -136,7 +137,7 @@ export default async function Home({
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-10 sm:px-10 lg:px-12">
       <section className="rounded-[36px] border border-black/8 bg-(--color-surface)] p-8 shadow-[0_30px_80px_rgba(15,23,42,0.10)] backdrop-blur">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl space-y-4">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
               Northstar CRM
             </p>
@@ -147,6 +148,12 @@ export default async function Home({
               Shared schema, shared UI, and a live API connection when available. The
               dashboard falls back to seeded sample data if the FastAPI app is not running.
             </p>
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-900 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white">
+              View the portfolio shell
+              <span aria-hidden>→</span>
+            </Link>
           </div>
 
           <div className="grid min-w-full gap-3 sm:grid-cols-3 lg:min-w-105">

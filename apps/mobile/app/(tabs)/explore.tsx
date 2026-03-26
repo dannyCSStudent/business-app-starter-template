@@ -157,8 +157,8 @@ export default function ActivityScreen() {
         isFallback={isFallback}
         label="Activity Feed"
       />
-      <Link href="/modal" style={styles.quickActionLink}>
-        <ThemedText style={styles.quickActionLinkText}>Open Quick Actions</ThemedText>
+      <Link href="/actions/activity" style={styles.quickActionLink}>
+        <ThemedText style={styles.quickActionLinkText}>Log Activity</ThemedText>
       </Link>
       {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
 

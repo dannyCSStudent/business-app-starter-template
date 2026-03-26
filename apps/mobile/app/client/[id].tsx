@@ -1,19 +1,12 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 
 import { BadgePill } from '@/components/crm/badge-pill';
+import { ClientDetailForm } from '@/components/crm/client-detail-form';
 import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
 import { CRMHero } from '@/components/crm/crm-hero';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useCRMDataSyncRefresh } from '@/hooks/use-crm-sync-refresh';
 import { useFallbackRefresh } from '@/hooks/use-fallback-refresh';
@@ -32,11 +25,13 @@ import {
   fallbackTags,
   fetchJson,
   isUuidLike,
-  interactionOptions,
   statusTone,
   toLocalDatetimeValue,
 } from '@/lib/crm';
 import { emitCRMDataChanged } from '@/lib/mobile-sync';
+import { ActivityHistory } from '@/components/crm/activity-history';
+import { TagManager } from '@/components/crm/tag-manager';
+import { QuickActivityForm } from '@/components/crm/quick-activity-form';
 
 function useClientDetail(clientId: string) {
   const [pendingContact, setPendingContact] = useState(false);
@@ -421,8 +416,6 @@ export default function ClientDetailScreen() {
     () => tags.filter((tag) => !clientTags.some((clientTag) => clientTag.id === tag.id)),
     [clientTags, tags],
   );
-  const [draftActivityType, setDraftActivityType] = useState<ClientInteractionType>('note');
-  const [draftActivityNotes, setDraftActivityNotes] = useState('');
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
   const [draftActivityNotesById, setDraftActivityNotesById] = useState<Record<string, string>>({});
   const [draftClientStatus, setDraftClientStatus] = useState<ClientStatus>(client?.status ?? 'lead');
@@ -432,6 +425,17 @@ export default function ClientDetailScreen() {
   const [draftLastContact, setDraftLastContact] = useState(
     toLocalDatetimeValue(client?.last_contacted_at),
   );
+
+  const handleSaveClientDetails = () =>
+    updateContact({
+      email: draftEmail.trim() || null,
+      notes: draftClientNotes.trim() || null,
+      phone: draftPhone.trim() || null,
+      last_contacted_at: draftLastContact
+        ? new Date(draftLastContact).toISOString()
+        : null,
+      status: draftClientStatus,
+    });
 
   useEffect(() => {
     setDraftClientStatus(client?.status ?? 'lead');
@@ -478,335 +482,54 @@ export default function ClientDetailScreen() {
         label={isUuidLike(client.id) ? 'Client Detail' : 'Client Detail Sample'}
       />
 
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Client Details</ThemedText>
-        <ThemedText style={styles.detailMuted}>
-          Update pipeline status, contact details, and notes in one form.
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {(['lead', 'active', 'completed'] as ClientStatus[]).map((status) => {
-            const isSelected = draftClientStatus === status;
-            const statusColors = statusTone[status];
+      <ClientDetailForm
+        client={client}
+        colorScheme={colorScheme}
+        colors={colors}
+        draftStatus={draftClientStatus}
+        setDraftStatus={setDraftClientStatus}
+        draftEmail={draftEmail}
+        setDraftEmail={setDraftEmail}
+        draftPhone={draftPhone}
+        setDraftPhone={setDraftPhone}
+        draftLastContact={draftLastContact}
+        setDraftLastContact={setDraftLastContact}
+        draftNotes={draftClientNotes}
+        setDraftNotes={setDraftClientNotes}
+        isFallback={isFallback}
+        pendingContact={pendingContact}
+        onSave={handleSaveClientDetails}
+      />
 
-            return (
-              <Pressable
-                key={status}
-                onPress={() => setDraftClientStatus(status)}
-                disabled={isFallback || pendingContact}
-                style={[
-                  styles.actionChip,
-                  isSelected && {
-                    backgroundColor: statusColors.bg,
-                    borderColor: statusColors.text,
-                  },
-                ]}>
-                <ThemedText
-                  style={[styles.actionChipText, isSelected && { color: statusColors.text }]}>
-                  {status}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
-        <TextInput
-          value={draftEmail}
-          onChangeText={setDraftEmail}
-          placeholder="Email"
-          placeholderTextColor="#94A3B8"
-          editable={!isFallback && !pendingContact}
-          style={[
-            styles.input,
-            {
-              color: colors.text,
-              borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-              backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-            },
-          ]}
-        />
-        <TextInput
-          value={draftPhone}
-          onChangeText={setDraftPhone}
-          placeholder="Phone"
-          placeholderTextColor="#94A3B8"
-          editable={!isFallback && !pendingContact}
-          style={[
-            styles.input,
-            {
-              color: colors.text,
-              borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-              backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-            },
-          ]}
-        />
-        <TextInput
-          value={draftLastContact}
-          onChangeText={setDraftLastContact}
-          placeholder="YYYY-MM-DDTHH:MM"
-          placeholderTextColor="#94A3B8"
-          editable={!isFallback && !pendingContact}
-          style={[
-            styles.input,
-            {
-              color: colors.text,
-              borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-              backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-            },
-          ]}
-        />
-        <TextInput
-          value={draftClientNotes}
-          onChangeText={setDraftClientNotes}
-          placeholder="Add notes about this client"
-          placeholderTextColor="#94A3B8"
-          editable={!isFallback && !pendingContact}
-          multiline
-          style={[
-            styles.activityInput,
-            styles.notesInput,
-            {
-              color: colors.text,
-              borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-              backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-            },
-          ]}
-        />
-        <Pressable
-          onPress={async () => {
-            await updateContact({
-              email: draftEmail.trim() || null,
-              notes: draftClientNotes.trim() || null,
-              phone: draftPhone.trim() || null,
-              last_contacted_at: draftLastContact
-                ? new Date(draftLastContact).toISOString()
-                : null,
-              status: draftClientStatus,
-            });
-          }}
-          disabled={isFallback || pendingContact}
-          style={styles.primaryButton}>
-          <ThemedText style={styles.primaryButtonText}>
-            {pendingContact ? 'Saving...' : 'Save client details'}
-          </ThemedText>
-        </Pressable>
-      </ThemedView>
+      <TagManager
+        assignedTags={clientTags}
+        availableTags={availableTags}
+        isFallback={isFallback}
+        pending={pendingTag}
+        onAssignTag={assignTag}
+        onRemoveTag={removeTag}
+      />
 
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Tags</ThemedText>
-        <View style={styles.tagRow}>
-          {clientTags.length ? (
-            clientTags.map((tag) => (
-              <Pressable
-                key={tag.id}
-                onPress={() => void removeTag(tag.id)}
-                disabled={isFallback || pendingTag}
-                style={[
-                  styles.tagPill,
-                  styles.tagActionPill,
-                  { backgroundColor: `${tag.color}22`, borderColor: `${tag.color}66` },
-                ]}>
-                <ThemedText style={[styles.tagText, { color: tag.color }]}>
-                  {pendingTag ? 'Updating...' : `${tag.name} x`}
-                </ThemedText>
-              </Pressable>
-            ))
-          ) : (
-            <ThemedText style={styles.detailMuted}>No tags assigned</ThemedText>
-          )}
-        </View>
-        <ThemedText style={styles.detailMuted}>Tap an assigned tag to remove it.</ThemedText>
-        <View style={styles.tagRow}>
-          {availableTags.length ? (
-            availableTags.map((tag) => (
-              <Pressable
-                key={tag.id}
-                onPress={() => void assignTag(tag.id)}
-                disabled={isFallback || pendingTag}
-                style={[
-                  styles.tagPill,
-                  styles.tagActionPill,
-                  { backgroundColor: '#FFFFFF', borderColor: `${tag.color}66` },
-                ]}>
-                <ThemedText style={[styles.tagText, { color: tag.color }]}>
-                  {pendingTag ? 'Updating...' : `+ ${tag.name}`}
-                </ThemedText>
-              </Pressable>
-            ))
-          ) : (
-            <ThemedText style={styles.detailMuted}>All available tags are assigned.</ThemedText>
-          )}
-        </View>
-      </ThemedView>
+      <QuickActivityForm
+        onSubmit={({ interactionType, notes }) => logActivity(interactionType, notes)}
+        isFallback={isFallback}
+        isPending={pendingActivity}
+      />
 
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Quick Activity</ThemedText>
-        <View style={styles.chipRow}>
-          {interactionOptions.map((option) => {
-            const isSelected = draftActivityType === option;
-
-            return (
-              <Pressable
-                key={option}
-                onPress={() => setDraftActivityType(option)}
-                disabled={isFallback || pendingActivity}
-                style={[styles.actionChip, isSelected && styles.quickActionSelected]}>
-                <ThemedText
-                  style={[
-                    styles.actionChipText,
-                    isSelected && styles.quickActionSelectedText,
-                  ]}>
-                  {option.replace('_', ' ')}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
-        <TextInput
-          value={draftActivityNotes}
-          onChangeText={setDraftActivityNotes}
-          placeholder="Add a quick follow-up note"
-          placeholderTextColor="#94A3B8"
-          editable={!isFallback && !pendingActivity}
-          multiline
-          style={[
-            styles.activityInput,
-            {
-              color: colors.text,
-              borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-              backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-            },
-          ]}
-        />
-        <Pressable
-          onPress={async () => {
-            const notes = draftActivityNotes.trim();
-            if (!notes) {
-              return;
-            }
-
-            const didLog = await logActivity(draftActivityType, notes);
-            if (didLog) {
-              setDraftActivityNotes('');
-            }
-          }}
-          disabled={isFallback || pendingActivity || !draftActivityNotes.trim()}
-          style={styles.primaryButton}>
-          <ThemedText style={styles.primaryButtonText}>
-            {pendingActivity ? 'Logging...' : 'Log activity'}
-          </ThemedText>
-        </Pressable>
-      </ThemedView>
-
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle">Activity</ThemedText>
-        <View style={styles.activityList}>
-          {activity.length ? (
-            activity.map((item) => (
-              <View key={item.id} style={styles.activityCard}>
-                <View style={styles.activityCardHeader}>
-                  <ThemedText style={styles.activityType}>
-                    {item.interaction_type.replace('_', ' ')}
-                  </ThemedText>
-                  <View style={styles.activityMeta}>
-                    <ThemedText style={styles.activityDate}>
-                      {new Date(item.timestamp).toLocaleDateString()}
-                    </ThemedText>
-                    <Pressable
-                      onPress={() => void deleteActivity(item.id)}
-                      disabled={
-                        isFallback ||
-                        pendingDeleteActivityId !== null ||
-                        pendingUpdateActivityId !== null
-                      }
-                      style={styles.deleteLink}>
-                      <ThemedText style={styles.deleteLinkText}>
-                        {pendingDeleteActivityId === item.id ? 'Deleting...' : 'Delete'}
-                      </ThemedText>
-                    </Pressable>
-                  </View>
-                </View>
-                {editingActivityId === item.id ? (
-                  <View style={styles.activityEditor}>
-                    <TextInput
-                      value={draftActivityNotesById[item.id] ?? item.notes ?? ''}
-                      onChangeText={(text) =>
-                        setDraftActivityNotesById((current) => ({
-                          ...current,
-                          [item.id]: text,
-                        }))
-                      }
-                      placeholder="Update activity notes"
-                      placeholderTextColor="#94A3B8"
-                      editable={!isFallback && pendingUpdateActivityId === null}
-                      multiline
-                      style={[
-                        styles.activityInput,
-                        styles.activityEditInput,
-                        {
-                          color: colors.text,
-                          borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-                          backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
-                        },
-                      ]}
-                    />
-                    <View style={styles.activityEditorActions}>
-                      <Pressable
-                        onPress={() => {
-                          setEditingActivityId(null);
-                          setDraftActivityNotesById((current) => {
-                            const next = { ...current };
-                            delete next[item.id];
-                            return next;
-                          });
-                        }}
-                        disabled={pendingUpdateActivityId !== null}
-                        style={styles.secondaryInlineButton}>
-                        <ThemedText style={styles.secondaryInlineButtonText}>Cancel</ThemedText>
-                      </Pressable>
-                      <Pressable
-                        onPress={async () => {
-                          const didUpdate = await updateActivity(
-                            item.id,
-                            (draftActivityNotesById[item.id] ?? item.notes ?? '').trim(),
-                          );
-
-                          if (didUpdate) {
-                            setEditingActivityId(null);
-                          }
-                        }}
-                        disabled={isFallback || pendingUpdateActivityId !== null}
-                        style={styles.primaryInlineButton}>
-                        <ThemedText style={styles.primaryInlineButtonText}>
-                          {pendingUpdateActivityId === item.id ? 'Saving...' : 'Save'}
-                        </ThemedText>
-                      </Pressable>
-                    </View>
-                  </View>
-                ) : (
-                  <>
-                    <ThemedText style={styles.detailText}>
-                      {item.notes ?? 'No notes attached.'}
-                    </ThemedText>
-                    <Pressable
-                      onPress={() => {
-                        setEditingActivityId(item.id);
-                        setDraftActivityNotesById((current) => ({
-                          ...current,
-                          [item.id]: item.notes ?? '',
-                        }));
-                      }}
-                      disabled={isFallback || pendingDeleteActivityId !== null}
-                      style={styles.editLink}>
-                      <ThemedText style={styles.editLinkText}>Edit notes</ThemedText>
-                    </Pressable>
-                  </>
-                )}
-              </View>
-            ))
-          ) : (
-            <ThemedText style={styles.detailMuted}>No activity logged yet.</ThemedText>
-          )}
-        </View>
-      </ThemedView>
+      <ActivityHistory
+        activity={activity}
+        isFallback={isFallback}
+        pendingDeleteActivityId={pendingDeleteActivityId}
+        pendingUpdateActivityId={pendingUpdateActivityId}
+        editingActivityId={editingActivityId}
+        setEditingActivityId={setEditingActivityId}
+        draftActivityNotesById={draftActivityNotesById}
+        setDraftActivityNotesById={setDraftActivityNotesById}
+        updateActivity={updateActivity}
+        deleteActivity={deleteActivity}
+        colors={colors}
+        colorScheme={colorScheme}
+      />
     </ScrollView>
   );
 }
@@ -866,10 +589,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: '#334155',
   },
-  detailMuted: {
-    fontSize: 13,
-    color: '#64748B',
-  },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -913,26 +632,6 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#F8FAFC',
     fontSize: 14,
-    fontWeight: '700',
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tagPill: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1,
-  },
-  tagActionPill: {
-    minHeight: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tagText: {
-    fontSize: 12,
     fontWeight: '700',
   },
   activityInput: {
