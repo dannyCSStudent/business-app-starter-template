@@ -1,6 +1,8 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
+from datetime import datetime, timezone
+
 
 from app.db.supabase_client import supabase
 from app.schemas.activity import (
@@ -23,7 +25,13 @@ def is_valid_uuid(value: str) -> bool:
 
 @router.get("/", response_model=list[ClientActivityRecord])
 def get_activity():
-    return supabase.table("client_activity").select("*").order("timestamp", desc=True).execute().data
+    return (supabase
+        .table("client_activity")
+        .select("*")
+        .order("timestamp", desc=True)
+        .execute()
+        .data
+    )
 
 
 @router.get("/client/{client_id}", response_model=list[ClientActivityRecord])
@@ -44,8 +52,19 @@ def get_client_activity(client_id: str):
 
 @router.post("/", response_model=list[ClientActivityRecord])
 def create_activity(activity: ClientActivityCreate):
-    return supabase.table("client_activity").insert(activity.model_dump()).execute().data
 
+    payload = activity.model_dump()
+
+    if not payload.get("timestamp"):
+        payload["timestamp"] = datetime.now(timezone.utc).isoformat()
+
+    return (
+        supabase
+        .table("client_activity")
+        .insert(payload)
+        .execute()
+        .data
+    )
 
 @router.patch("/{activity_id}", response_model=list[ClientActivityRecord])
 def update_activity(activity_id: str, updates: ClientActivityUpdate):

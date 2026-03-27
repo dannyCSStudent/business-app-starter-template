@@ -16,7 +16,12 @@ class ClientActivityBase(BaseModel):
 
 class ClientActivityCreate(ClientActivityBase):
     client_id: str
-
+    
+class ClientActivityCreate(BaseModel):
+    client_id: str
+    interaction_type: str
+    notes: str
+    timestamp: datetime | None = None
 
 class ClientActivityUpdate(BaseModel):
     interaction_type: InteractionType | None = None

@@ -1,521 +1,300 @@
-# SYSTEM_ROADMAP.md — Small Business Client Tracker Build Plan
+# AGENTS.md — AI Development Guardrails for CRM Template System
 
-This document defines the execution roadmap for AI agents working inside this repository.
+This document defines rules for AI coding agents (Codex or equivalent) working inside this repository.
 
-Agents must follow tasks in order.
+Agents MUST follow these rules exactly.
 
-Agents must NOT skip steps.
-
-Agents must NOT refactor working infrastructure unless instructed.
+Failure to follow these rules may break infrastructure.
 
 ---
 
-# Project Goal
+# Core Principle
 
-Build the most advanced small-business Client Tracker CRM available as a reusable TurboRepo template.
+This repository is a **production-grade reusable CRM template system**.
 
-The finished system must support:
+Agents must upgrade the system **without modifying working infrastructure** unless explicitly instructed.
 
-mobile usage
+Agents must prioritize:
 
-web dashboard analytics
+stability
+reusability
+modularity
+design system consistency
 
-Supabase authentication
-
-timeline interaction tracking
-
-AI workflow intelligence
-
-team collaboration readiness
-
-template reuse for future client systems
+over experimentation.
 
 ---
 
-# Phase 0 — Infrastructure Validation
+# Protected Infrastructure (DO NOT MODIFY)
 
-Objective:
+Agents must NOT change:
 
-Ensure baseline template runs correctly before feature development begins.
+Supabase schema structure
 
-Tasks:
+environment variable contracts
 
-Verify FastAPI server starts successfully
+authentication flow
 
-Verify Supabase connection works
+database relationships
 
-Verify environment variables load correctly
+TurboRepo workspace structure
 
-Verify Expo mobile app launches
+packages/ shared modules architecture
 
-Verify web dashboard launches
+API route signatures
 
-Verify TurboRepo workspace builds correctly
+existing endpoint URLs
 
-Completion Criteria:
+seed pipeline logic
 
-apps/api runs without errors
-
-apps/mobile launches simulator
-
-apps/web loads homepage
+unless explicitly instructed.
 
 ---
 
-# Phase 1 — Database Schema Design
+# Allowed Modification Zones
 
-Objective:
+Agents MAY modify:
 
-Create production-ready CRM schema.
+components/
 
-Agents must create tables:
+screens/
 
-clients
+styles/
 
-client_activity
+theme/
 
-users_roles
+ui/
 
-tags
+layout/
 
-client_tags
+design tokens
 
----
+frontend-only utilities
 
-## Table: clients
+documentation files
 
-Fields:
+Agents MAY improve:
 
-id (uuid primary key)
+spacing
 
-name
+typography
 
-email
+animations
 
-phone
+component hierarchy
 
-status
+responsive behavior
 
-notes
+dark mode compatibility
 
-last_contacted_at
-
-owner_user_id
-
-created_at
-
-updated_at
-
-Indexes required:
-
-email
-
-status
-
-owner_user_id
+accessibility improvements
 
 ---
 
-## Table: client_activity
+# Backend Modification Rules
 
-Fields:
+Agents MAY:
 
-id
+add new endpoints
 
-client_id
+extend analytics endpoints
 
-interaction_type
+extend AI endpoints
 
-notes
+add caching
 
-timestamp
+optimize queries
 
-created_by
+Agents MUST NOT:
 
-Indexes required:
+rename endpoints
 
-client_id
+change response shapes
 
-timestamp
+remove fields used by frontend
 
----
-
-## Table: users_roles
-
-Fields:
-
-user_id
-
-role
-
-Roles allowed:
-
-admin
-
-staff
-
-viewer
+alter schema expectations
 
 ---
 
-## Table: tags
+# Database Rules
 
-Fields:
+Agents MUST NOT:
 
-id
+drop tables
 
-name
+rename columns
 
-color
+remove indexes
 
----
+modify enum definitions
 
-## Table: client_tags
+change foreign keys
 
-Fields:
+Agents MAY:
 
-client_id
+add indexes if performance requires
 
-tag_id
-
----
-
-Completion Criteria:
-
-Tables created
-
-Indexes created
-
-Relations verified
+add optional columns if backward-compatible
 
 ---
 
-# Phase 2 — Backend Client API
+# UI Upgrade Mission
 
-Objective:
+Agents are authorized to transform UI into:
 
-Build scalable CRUD endpoints.
+premium SaaS-level interface
 
-Agents must implement:
+mobile-first responsive layout
 
-GET /clients
+design-system-driven component architecture
 
-GET /clients/{id}
+consistent spacing rhythm
 
-POST /clients
+accessible typography scale
 
-PATCH /clients/{id}
+professional dashboard-grade visual hierarchy
 
-DELETE /clients/{id}
+Target quality benchmark:
 
-GET /clients/search
+Linear
 
-Requirements:
+Notion
 
-Pagination required
+Stripe Dashboard
 
-Filtering required
+Vercel Dashboard
 
-Status filtering required
-
-Tag filtering required
-
-Date filtering required
+Attio CRM
 
 ---
 
-# Phase 3 — Activity Timeline API
+# Component Architecture Requirements
 
-Objective:
+Agents must organize UI into:
 
-Enable interaction intelligence tracking.
+components/ui/
 
-Agents must implement:
+components/layout/
 
-GET /clients/{id}/activity
+components/cards/
 
-POST /clients/{id}/activity
+components/forms/
 
-PATCH /activity/{id}
+components/feedback/
 
-DELETE /activity/{id}
+components/navigation/
 
-Interaction types allowed:
+Reusable components required:
 
-call
+Button
 
-email
+Card
 
-meeting
+Modal
 
-note
+Drawer
 
-follow_up
+Badge
 
----
+Avatar
 
-# Phase 4 — Authentication System
+Tag
 
-Objective:
+Input
 
-Secure multi-user CRM environment.
+Select
 
-Agents must implement:
+TimelineItem
 
-Supabase Auth integration
+EmptyState
 
-Login screen
-
-Signup screen
-
-Session persistence
-
-Protected routes
-
-Role middleware
-
-Role enforcement inside API routes
+LoadingSkeleton
 
 ---
 
-# Phase 5 — Mobile Client Tracker UI
+# Design Token Rules
 
-Objective:
+Agents must centralize:
 
-Deliver demo-ready mobile CRM experience.
+colors
 
-Agents must implement:
+spacing
 
-Client List Screen
+radius
 
-Client Detail Screen
+typography
 
-Add Client Screen
+shadows
 
-Edit Client Screen
+animation durations
 
-Delete Client Action
+inside a shared theme system.
 
-Client Activity Timeline Screen
-
-Tag assignment UI
-
-Follow-up reminder indicator
-
-Completion Criteria:
-
-Mobile app fully usable for client tracking
+No hardcoded colors allowed inside components.
 
 ---
 
-# Phase 6 — Smart Search System
+# Mobile Rules
 
-Objective:
+Agents must preserve:
 
-Deliver fast business-grade filtering.
+Expo compatibility
 
-Agents must implement:
+cross-platform layout stability
 
-Search by name
+gesture safety
 
-Search by email
-
-Search by phone
-
-Filter by tag
-
-Filter by status
-
-Filter by last_contacted_at
-
-Sort by recent activity
-
-Sort alphabetically
+performance optimization
 
 ---
 
-# Phase 7 — AI Workflow Intelligence Layer
-
-Objective:
-
-Create premium differentiation feature.
-
-Agents must implement endpoints:
-
-POST /ai/summarize-client-notes
-
-POST /ai/suggest-followups
-
-POST /ai/activity-insights
-
-AI must support:
-
-conversation summarization
-
-recommended next action
-
-priority detection
-
-relationship strength estimation
-
----
-
-# Phase 8 — Dashboard Analytics Engine
-
-Objective:
-
-Deliver business intelligence layer.
-
-Agents must implement endpoints:
-
-GET /analytics/client-count
-
-GET /analytics/conversion-rate
-
-GET /analytics/followups-due
-
-GET /analytics/activity-volume
-
-GET /analytics/team-performance
-
----
-
-# Phase 9 — Web Dashboard Interface
-
-Objective:
-
-Create admin control center.
-
-Agents must implement:
-
-Client pipeline overview
-
-Activity heatmap
-
-Recent interactions panel
-
-Follow-up reminders panel
-
-Team performance panel
-
-Conversion insights panel
-
----
-
-# Phase 10 — Notification System
-
-Objective:
-
-Improve retention and engagement.
-
-Agents must implement:
-
-Follow-up reminder notifications
-
-Activity alerts
-
-Assignment alerts
-
-Future support:
-
-push notifications
-
-email reminders
-
----
-
-# Phase 11 — Role-Based Permissions Engine
-
-Objective:
-
-Support multi-team deployment readiness.
-
-Agents must enforce:
-
-admin full access
-
-staff limited modification access
-
-viewer read-only access
-
-API endpoints must enforce role access
-
----
-
-# Phase 12 — Performance Optimization
-
-Objective:
-
-Prepare production-scale deployment readiness.
+# Performance Rules
 
 Agents must:
 
-Add DB indexes where missing
+avoid unnecessary rerenders
 
-Add pagination everywhere required
+use memoization where appropriate
 
-Avoid N+1 queries
+avoid blocking API calls
 
-Cache analytics queries if necessary
+preserve pagination usage
 
-Optimize search queries
-
----
-
-# Phase 13 — Template Conversion Mode
-
-Objective:
-
-Convert CRM into reusable generator template.
-
-Agents must:
-
-Move shared logic into packages/
-
-Extract reusable UI components
-
-Extract reusable DB schema patterns
-
-Extract reusable API services
-
-Ensure new systems can be created from template easily
+avoid N+1 fetch patterns
 
 ---
 
-# Phase 14 — Demo Readiness Mode
+# Documentation Rules
 
-Objective:
+Agents must update:
 
-Prepare portfolio-grade showcase system.
+README.md
 
-Agents must ensure:
+SYSTEM_ROADMAP.md
 
-seed demo client data exists
+DESIGN_HANDOFF.md
 
-seed demo activity history exists
-
-analytics panels show realistic data
-
-mobile app usable without configuration friction
-
-web dashboard visually complete
+when introducing architectural changes.
 
 ---
 
-# Final Completion Criteria
+# Template System Objective
 
-System qualifies as complete when:
+This repository is not a single CRM.
 
-mobile CRM works end-to-end
+It is a **template generator for multiple future business systems**:
 
-web dashboard analytics functional
+CRM
 
-AI insights operational
+Job tracker
 
-Supabase auth working
+Client portal
 
-timeline tracking operational
+Membership manager
 
-search system production-ready
+Sales pipeline tool
 
-template reusable for future builds
+Internal dashboards
+
+Agents must preserve template flexibility at all times.
