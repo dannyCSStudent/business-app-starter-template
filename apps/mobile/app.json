@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Northstar CRM",
-    "slug": "northstar-crm",
+    "slug": "business-app-starter-template",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
