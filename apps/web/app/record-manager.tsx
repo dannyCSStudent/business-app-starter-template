@@ -67,12 +67,17 @@ export function RecordManager({
   }
 
   return (
-    <section className="mt-10 rounded-[30px] border border-black/8 bg-white/82 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
+    <section className="rounded-[34px] border border-(--color-line) bg-(--color-surface) p-6 shadow-(--shadow-md) backdrop-blur">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-slate-950">Manage Records</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Remove bad entries directly from the dashboard.
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Cleanup
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Manage records
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            High-friction actions are separated here so destructive work stays deliberate.
           </p>
         </div>
         {isFallback ? (
@@ -93,9 +98,12 @@ export function RecordManager({
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-4">
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h4 className="text-lg font-semibold text-slate-950">Clients</h4>
+      <div className="mt-6 grid gap-4 xl:grid-cols-2">
+        <div className="rounded-[28px] border border-(--color-line) bg-white p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Client records
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Clients</h4>
           <div className="mt-4 space-y-3">
             {visibleClients.slice(0, 5).map((client) => {
               const key = `client:${client.id}`;
@@ -134,8 +142,11 @@ export function RecordManager({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h4 className="text-lg font-semibold text-slate-950">Activity</h4>
+        <div className="rounded-[28px] border border-(--color-line) bg-white p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Timeline records
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Activity</h4>
           <div className="mt-4 space-y-3">
             {visibleActivity.slice(0, 5).map((item) => {
               const clientName =
@@ -176,8 +187,11 @@ export function RecordManager({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h4 className="text-lg font-semibold text-slate-950">Tags</h4>
+        <div className="rounded-[28px] border border-(--color-line) bg-white p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Taxonomy
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Tags</h4>
           <div className="mt-4 space-y-3">
             {visibleTags.slice(0, 5).map((tag) => {
               const key = `tag:${tag.id}`;
@@ -219,8 +233,11 @@ export function RecordManager({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h4 className="text-lg font-semibold text-slate-950">Assignments</h4>
+        <div className="rounded-[28px] border border-(--color-line) bg-white p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Relationships
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Assignments</h4>
           <div className="mt-4 space-y-3">
             {visibleAssignments.slice(0, 5).map((assignment) => {
               const key = `assignment:${assignment.client_id}:${assignment.tag_id}`;

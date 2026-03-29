@@ -1,16 +1,18 @@
 import { Link } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { BadgePill } from '@/components/crm/badge-pill';
 import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
 import { CRMHero } from '@/components/crm/crm-hero';
+import { PreferencesLink } from '@/components/crm/preferences-link';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useCRMDataSyncRefresh } from '@/hooks/use-crm-sync-refresh';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFallbackRefresh } from '@/hooks/use-fallback-refresh';
+import { getClientAppearance } from '@/lib/client-appearance';
 import { apiBaseUrl, Client, fetchJson, fallbackClients, statusTone } from '@/lib/crm';
 
 function useClients() {
@@ -34,9 +36,21 @@ function useClients() {
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
   const [query, setQuery] = useState('');
+  const [failedImages, setFailedImages] = useState<Record<string, { banner?: boolean; profile?: boolean }>>({});
   const { clients, isFallback, isRefreshing, error, refresh } = useClients();
   useCRMDataSyncRefresh(refresh);
+
+  function markImageFailed(clientId: string, field: 'banner' | 'profile') {
+    setFailedImages((current) => ({
+      ...current,
+      [clientId]: {
+        ...current[clientId],
+        [field]: true,
+      },
+    }));
+  }
 
   const filteredClients = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -70,8 +84,8 @@ export default function HomeScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}>
       <CRMHero
-        backgroundColor="#F4EFE7"
-        copy="Browse the client pipeline here, then open a detail view for edits, tags, and follow-up."
+        backgroundColor={colorScheme === 'dark' ? '#1E2730' : '#F3E9DC'}
+        copy="Browse the pipeline here, then step into a detail workspace for tags, follow-up, and timeline edits."
         metrics={[
           { label: 'Active', tone: 'dark', value: activeCount },
           { label: 'Leads', value: leadCount },
@@ -80,8 +94,12 @@ export default function HomeScreen() {
       />
 
       <ThemedView style={styles.toolbar}>
-        <ThemedText type="subtitle">Clients</ThemedText>
+        <View style={styles.toolbarCopy}>
+          <ThemedText style={styles.sectionLabel}>Pipeline</ThemedText>
+          <ThemedText type="subtitle">Clients</ThemedText>
+        </View>
         <View style={styles.toolbarActions}>
+          <PreferencesLink />
           <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
             {isFallback ? 'Fallback data' : 'API connected'}
           </BadgePill>
@@ -100,8 +118,8 @@ export default function HomeScreen() {
           styles.searchInput,
           {
             color: colors.text,
-            borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-            backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
+            borderColor: colorScheme === 'dark' ? '#334155' : 'rgba(24,33,43,0.1)',
+            backgroundColor: colorScheme === 'dark' ? 'rgba(26,37,48,0.92)' : 'rgba(255,255,255,0.9)',
           },
         ]}
       />
@@ -114,60 +132,117 @@ export default function HomeScreen() {
         isFallback={isFallback}
         label="Client Feed"
       />
-      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+      {error ? (
+        <View style={[styles.feedbackCardError, isDark && styles.feedbackCardErrorDark]}>
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        </View>
+      ) : null}
 
       {filteredClients.map((client) => {
         const tone = statusTone[client.status];
+        const appearance = getClientAppearance(client.name, client.status);
+        const imageState = failedImages[client.id] ?? {};
 
         return (
-          <ThemedView key={client.id} style={styles.clientCard}>
-            <View style={styles.clientHeader}>
-              <View style={styles.clientHeaderText}>
-                <ThemedText type="defaultSemiBold">{client.name}</ThemedText>
-                <ThemedText style={styles.clientSubtle}>
-                  {client.email ?? client.phone ?? 'No contact details yet'}
-                </ThemedText>
-              </View>
-              <View style={[styles.statusPill, { backgroundColor: tone.bg }]}>
-                <ThemedText style={[styles.statusText, { color: tone.text }]}>
-                  {client.status}
-                </ThemedText>
-              </View>
-            </View>
-
-            <ThemedText style={styles.clientMeta}>
-              Last contact:{' '}
-              {client.last_contacted_at
-                ? new Date(client.last_contacted_at).toLocaleDateString()
-                : 'Not scheduled'}
-            </ThemedText>
-
-            <ThemedText numberOfLines={2} style={styles.notesPreview}>
-              {client.notes ?? 'No notes yet. Open detail to add follow-up context.'}
-            </ThemedText>
-
-            <View style={styles.tagRow}>
-              {client.tags?.length ? (
-                client.tags.map((tag) => (
-                  <View
-                    key={tag.id}
-                    style={[
-                      styles.tagPill,
-                      { backgroundColor: `${tag.color}22`, borderColor: `${tag.color}66` },
-                    ]}>
-                    <ThemedText style={[styles.tagText, { color: tag.color }]}>
-                      {tag.name}
-                    </ThemedText>
+          <ThemedView key={client.id} style={[styles.clientCard, isDark && styles.clientCardDark]}>
+            <View
+              style={[
+                styles.clientBanner,
+                { backgroundColor: appearance.bannerStart },
+              ]}>
+              {client.banner_image_url && !imageState.banner ? (
+                <Image
+                  source={{ uri: client.banner_image_url }}
+                  style={styles.clientBannerImage}
+                  onError={() => markImageFailed(client.id, 'banner')}
+                />
+              ) : null}
+              <View style={[styles.clientBannerGlow, { backgroundColor: appearance.statusGlow }]} />
+              <View style={[styles.clientBannerBubble, { backgroundColor: appearance.dot }]} />
+              <View style={styles.clientBannerContent}>
+                <View
+                  style={[
+                    styles.avatar,
+                    {
+                      backgroundColor: appearance.avatarStart,
+                      borderColor: 'rgba(255,255,255,0.35)',
+                    },
+                  ]}>
+                  <View style={[styles.avatarInset, { backgroundColor: appearance.avatarEnd }]}>
+                    {client.profile_image_url && !imageState.profile ? (
+                      <Image
+                        source={{ uri: client.profile_image_url }}
+                        style={styles.avatarImage}
+                        onError={() => markImageFailed(client.id, 'profile')}
+                      />
+                    ) : (
+                      <ThemedText style={[styles.avatarText, { color: appearance.avatarText }]}>
+                        {appearance.initials}
+                      </ThemedText>
+                    )}
                   </View>
-                ))
-              ) : (
-                <ThemedText style={styles.clientSubtle}>No tags assigned</ThemedText>
-              )}
+                </View>
+              </View>
             </View>
 
-            <Link href={{ pathname: '/client/[id]', params: { id: client.id } }} style={styles.detailLink}>
-              <ThemedText style={styles.detailLinkText}>Open detail workspace</ThemedText>
-            </Link>
+            <View style={styles.clientBody}>
+              <View style={styles.clientIdentityRow}>
+                <View style={styles.clientHeaderText}>
+                  <ThemedText style={styles.clientName}>{client.name}</ThemedText>
+                  <ThemedText style={styles.clientSubtle}>
+                    {client.email ?? client.phone ?? 'No contact details yet'}
+                  </ThemedText>
+                </View>
+                <View style={[styles.statusPill, { backgroundColor: tone.bg }]}>
+                  <ThemedText style={[styles.statusText, { color: tone.text }]}>
+                    {client.status}
+                  </ThemedText>
+                </View>
+              </View>
+
+              <View style={[styles.metaPanel, isDark && styles.metaPanelDark]}>
+                <ThemedText style={styles.metaLabel}>Contact rhythm</ThemedText>
+                <ThemedText style={styles.clientMeta}>
+                  Last contact:{' '}
+                  {client.last_contacted_at
+                    ? new Date(client.last_contacted_at).toLocaleDateString()
+                    : 'Not scheduled'}
+                </ThemedText>
+              </View>
+
+              <ThemedText
+                numberOfLines={2}
+                style={[styles.notesPreview, isDark && styles.notesPreviewDark]}>
+                {client.notes ?? 'No notes yet. Open detail to add follow-up context.'}
+              </ThemedText>
+
+              <View style={styles.tagRow}>
+                {client.tags?.length ? (
+                  client.tags.map((tag) => (
+                    <View
+                      key={tag.id}
+                      style={[
+                        styles.tagPill,
+                        { backgroundColor: `${tag.color}22`, borderColor: `${tag.color}66` },
+                      ]}>
+                      <ThemedText style={[styles.tagText, { color: tag.color }]}>
+                        {tag.name}
+                      </ThemedText>
+                    </View>
+                  ))
+                ) : (
+                  <ThemedText style={styles.clientSubtle}>No tags assigned</ThemedText>
+                )}
+              </View>
+
+              <Link
+                href={{ pathname: '/client/[id]', params: { id: client.id } }}
+                style={[styles.detailLink, isDark && styles.detailLinkDark]}>
+                <ThemedText style={[styles.detailLinkText, isDark && styles.detailLinkTextDark]}>
+                  Open detail workspace
+                </ThemedText>
+              </Link>
+            </View>
           </ThemedView>
         );
       })}
@@ -181,14 +256,17 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 32,
-    gap: 16,
+    paddingBottom: 40,
+    gap: 18,
   },
   toolbar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  toolbarCopy: {
+    gap: 4,
   },
   toolbarActions: {
     flexDirection: 'row',
@@ -204,9 +282,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCFCE7',
     color: '#166534',
   },
+  sectionLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#6D7A88',
+  },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
@@ -215,27 +301,109 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
   },
+  feedbackCardError: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
+    backgroundColor: '#FFF1F2',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  feedbackCardErrorDark: {
+    borderColor: 'rgba(245,194,199,0.26)',
+    backgroundColor: 'rgba(127,29,29,0.26)',
+  },
   errorText: {
     fontSize: 13,
+    lineHeight: 18,
     color: '#B91C1C',
   },
   clientCard: {
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 28,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    gap: 12,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,251,245,0.82)',
   },
-  clientHeader: {
+  clientCardDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(24,33,43,0.82)',
+  },
+  clientBanner: {
+    minHeight: 132,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.14)',
+    overflow: 'hidden',
+  },
+  clientBannerImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  clientBannerGlow: {
+    position: 'absolute',
+    left: -12,
+    bottom: -18,
+    width: 98,
+    height: 98,
+    borderRadius: 999,
+  },
+  clientBannerBubble: {
+    position: 'absolute',
+    top: 10,
+    right: -8,
+    width: 86,
+    height: 86,
+    borderRadius: 999,
+  },
+  clientBannerContent: {
+    position: 'absolute',
+    left: 18,
+    bottom: 0,
+    transform: [{ translateY: 30 }],
+  },
+  clientBody: {
+    padding: 18,
+    paddingTop: 48,
+    gap: 14,
+  },
+  clientIdentityRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
-    alignItems: 'flex-start',
+  },
+  avatar: {
+    width: 68,
+    height: 68,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    padding: 4,
+  },
+  avatarInset: {
+    flex: 1,
+    width: '100%',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   clientHeaderText: {
     flex: 1,
-    gap: 4,
+    gap: 6,
+  },
+  clientName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#18212B',
   },
   clientSubtle: {
     fontSize: 13,
@@ -245,15 +413,39 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#475569',
   },
+  metaPanel: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(24,33,43,0.06)',
+    gap: 4,
+  },
+  metaPanelDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(244,237,228,0.08)',
+  },
+  metaLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    color: '#6D7A88',
+  },
   notesPreview: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
     color: '#334155',
+  },
+  notesPreviewDark: {
+    color: '#CBD5E1',
   },
   statusPill: {
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   statusText: {
     fontSize: 12,
@@ -268,8 +460,8 @@ const styles = StyleSheet.create({
   tagPill: {
     borderRadius: 999,
     borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   tagText: {
     fontSize: 12,
@@ -277,20 +469,39 @@ const styles = StyleSheet.create({
   },
   detailLink: {
     alignSelf: 'flex-start',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.68)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  detailLinkDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   detailLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#18212B',
     textTransform: 'uppercase',
+  },
+  detailLinkTextDark: {
+    color: '#F7F1E8',
   },
   quickActionLink: {
     alignSelf: 'flex-start',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   quickActionLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#18212B',
     textTransform: 'uppercase',
   },
 });

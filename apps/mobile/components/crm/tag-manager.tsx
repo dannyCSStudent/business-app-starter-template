@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ClientTag } from '@/lib/crm';
 
 type TagManagerProps = {
@@ -21,8 +22,16 @@ export function TagManager({
   onAssignTag,
   onRemoveTag,
 }: TagManagerProps) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const isDark = colorScheme === 'dark';
+
   return (
-    <ThemedView style={styles.section}>
+    <ThemedView
+      style={[
+        styles.section,
+        isDark && styles.sectionDark,
+      ]}>
+      <ThemedText style={styles.sectionLabel}>Organization</ThemedText>
       <ThemedText type="subtitle">Tags</ThemedText>
       <View style={styles.tagRow}>
         {assignedTags.length ? (
@@ -56,7 +65,10 @@ export function TagManager({
               style={[
                 styles.tagPill,
                 styles.tagActionPill,
-                { backgroundColor: '#FFFFFF', borderColor: `${tag.color}66` },
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF',
+                  borderColor: `${tag.color}66`,
+                },
               ]}>
               <ThemedText style={[styles.tagText, { color: tag.color }]}>
                 {pending ? 'Updating...' : `+ ${tag.name}`}
@@ -73,12 +85,24 @@ export function TagManager({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 28,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    gap: 12,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,251,245,0.82)',
+    gap: 14,
+  },
+  sectionDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(24,33,43,0.82)',
+  },
+  sectionLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#6D7A88',
   },
   tagRow: {
     flexDirection: 'row',
@@ -87,8 +111,8 @@ const styles = StyleSheet.create({
   },
   tagPill: {
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderWidth: 1,
   },
   tagActionPill: {
@@ -102,6 +126,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 13,
+    lineHeight: 19,
     color: '#64748B',
   },
 });

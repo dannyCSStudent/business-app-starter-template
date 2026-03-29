@@ -11,6 +11,8 @@ class ClientBase(BaseModel):
     name: str
     email: str | None = None
     phone: str | None = None
+    profile_image_url: str | None = None
+    banner_image_url: str | None = None
     status: ClientStatus
     notes: str | None = None
     last_contacted_at: datetime | None = None
@@ -25,6 +27,8 @@ class ClientUpdate(BaseModel):
     name: str | None = None
     email: str | None = None
     phone: str | None = None
+    profile_image_url: str | None = None
+    banner_image_url: str | None = None
     status: ClientStatus | None = None
     notes: str | None = None
     last_contacted_at: datetime | None = None

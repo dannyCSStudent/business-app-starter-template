@@ -277,12 +277,18 @@ export function ClientDashboard({
   }
 
   return (
-    <>
-      <section className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section
+      id="client-dashboard"
+      className="rounded-[34px] border border-(--color-line) bg-(--color-surface) p-6 shadow-(--shadow-md) backdrop-blur"
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-950">Clients</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Source: <span className="font-medium text-slate-900">{apiBaseUrl}</span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
+            Pipeline
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-stone-100">Clients</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Connected source: <span className="font-medium text-white">{apiBaseUrl}</span>
           </p>
         </div>
         <div
@@ -292,20 +298,20 @@ export function ClientDashboard({
         >
           {isFallback ? "Showing fallback data" : "Connected to API"}
         </div>
-      </section>
+      </div>
 
-      <section className="mt-6 rounded-[28px] border border-black/8 bg-white/78 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur">
+      <div className="mt-6 rounded-[28px] border border-(--color-line) bg-(--color-surface) p-4">
         <div className="flex flex-col gap-3 lg:flex-row">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name, contact info, notes, or tag"
-            className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            className="min-w-0 flex-1 rounded-[20px] border border-(--color-line) bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:bg-white/8 dark:text-stone-100 dark:placeholder:text-slate-500"
           />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
+            className="rounded-[20px] border border-(--color-line) bg-white px-4 py-3 text-sm text-slate-900 outline-none dark:bg-white/8 dark:text-stone-100"
           >
             {statusOptions.map((option) => (
               <option key={option} value={option}>
@@ -314,7 +320,7 @@ export function ClientDashboard({
             ))}
           </select>
         </div>
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
           Showing {filteredClients.length} of {displayedClients.length} clients
         </p>
         {error ? (
@@ -327,14 +333,14 @@ export function ClientDashboard({
             {success}
           </div>
         ) : null}
-      </section>
+      </div>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
         {filteredClients.map((client) => (
           <div key={client.id} className="flex flex-col gap-3">
             <ClientCard client={client} />
-            <div className="rounded-[22px] border border-slate-200 bg-white/70 p-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-3xl border border-(--color-line) bg-(--color-surface) p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                 Pipeline
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -347,7 +353,7 @@ export function ClientDashboard({
                     }))
                   }
                   disabled={isFallback || pendingKey === `status:${client.id}`}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50"
+                  className="rounded-full border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50 dark:bg-white/8 dark:text-stone-100"
                 >
                   {statusOptions
                     .filter((option): option is Client["status"] => option !== "all")
@@ -361,20 +367,20 @@ export function ClientDashboard({
                   type="button"
                   onClick={() => updateClientStatus(client.id)}
                   disabled={isFallback || pendingKey !== null}
-                  className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                  className="rounded-full bg-(--color-foreground) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                 >
                   {pendingKey === `status:${client.id}` ? "Saving..." : "Update status"}
                 </button>
                 <Link
                   href={`/?editClient=${encodeURIComponent(client.id)}#record-editor`}
-                  className="inline-flex rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                  className="inline-flex rounded-full border border-(--color-line) bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:bg-white/8 dark:text-stone-100 dark:hover:bg-white/12"
                 >
                   Edit details
                 </Link>
               </div>
 
-              <div className="mt-4 border-t border-slate-200 pt-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <div className="mt-4 border-t border-(--color-line) pt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                   Tags
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -388,14 +394,14 @@ export function ClientDashboard({
                           type="button"
                           onClick={() => removeClientTag(client.id, tag.id)}
                           disabled={isFallback || pendingKey !== null}
-                          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 disabled:opacity-50"
+                      className="rounded-full border border-(--color-line) bg-white px-3 py-1.5 text-xs font-medium text-slate-700 disabled:opacity-50"
                         >
                           {pendingKey === actionKey ? `Removing ${tag.name}...` : `${tag.name} x`}
                         </button>
                       );
                     })
                   ) : (
-                    <p className="text-sm text-slate-500">No tags assigned.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No tags assigned.</p>
                   )}
                 </div>
 
@@ -409,7 +415,7 @@ export function ClientDashboard({
                       }))
                     }
                     disabled={isFallback || pendingKey !== null}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50"
+                    className="rounded-full border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50 dark:bg-white/8 dark:text-stone-100"
                   >
                     <option value="">Select tag</option>
                     {tags
@@ -430,7 +436,7 @@ export function ClientDashboard({
                       pendingKey !== null ||
                       !draftTagIds[client.id]
                     }
-                    className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="rounded-full bg-(--color-foreground) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     {pendingKey?.startsWith(`add:${client.id}:`)
                       ? "Adding..."
@@ -438,8 +444,8 @@ export function ClientDashboard({
                   </button>
                 </div>
 
-                <div className="mt-4 border-t border-slate-200 pt-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="mt-4 border-t border-(--color-line) pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                     Quick Activity
                   </p>
                   <div className="mt-3 flex flex-col gap-2">
@@ -452,7 +458,7 @@ export function ClientDashboard({
                         }))
                       }
                       disabled={isFallback || pendingKey !== null}
-                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50"
+                      className="rounded-2xl border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50 dark:bg-white/8 dark:text-stone-100"
                     >
                       {interactionOptions.map((option) => (
                         <option key={option} value={option}>
@@ -471,7 +477,7 @@ export function ClientDashboard({
                       rows={3}
                       placeholder="Log a quick follow-up note"
                       disabled={isFallback || pendingKey !== null}
-                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50"
+                      className="rounded-2xl border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50 dark:bg-white/8 dark:text-stone-100 dark:placeholder:text-slate-500"
                     />
                     <button
                       type="button"
@@ -481,15 +487,15 @@ export function ClientDashboard({
                         pendingKey !== null ||
                         !(draftActivityNotes[client.id] ?? "").trim()
                       }
-                      className="w-fit rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      className="w-fit rounded-full bg-(--color-foreground) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                     >
                       {pendingKey === `activity:${client.id}` ? "Logging..." : "Log activity"}
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-4 border-t border-slate-200 pt-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="mt-4 border-t border-(--color-line) pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
                     Contact
                   </p>
                   <div className="mt-3 flex flex-col gap-2">
@@ -504,7 +510,7 @@ export function ClientDashboard({
                       }
                       disabled={isFallback || pendingKey !== null}
                       placeholder="Email"
-                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50"
+                      className="rounded-2xl border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50 dark:bg-white/8 dark:text-stone-100 dark:placeholder:text-slate-500"
                     />
                     <input
                       value={draftPhones[client.id] ?? client.phone ?? ""}
@@ -516,7 +522,7 @@ export function ClientDashboard({
                       }
                       disabled={isFallback || pendingKey !== null}
                       placeholder="Phone"
-                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50"
+                      className="rounded-2xl border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-50 dark:bg-white/8 dark:text-stone-100 dark:placeholder:text-slate-500"
                     />
                     <input
                       type="datetime-local"
@@ -531,13 +537,13 @@ export function ClientDashboard({
                         }))
                       }
                       disabled={isFallback || pendingKey !== null}
-                      className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50"
+                      className="rounded-2xl border border-(--color-line) bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50 dark:bg-white/8 dark:text-stone-100"
                     />
                     <button
                       type="button"
                       onClick={() => updateClientContact(client)}
                       disabled={isFallback || pendingKey !== null}
-                      className="w-fit rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      className="w-fit rounded-full bg-(--color-foreground) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                     >
                       {pendingKey === `contact:${client.id}` ? "Saving..." : "Update contact"}
                     </button>
@@ -547,7 +553,7 @@ export function ClientDashboard({
             </div>
           </div>
         ))}
-      </section>
-    </>
+      </div>
+    </section>
   );
 }

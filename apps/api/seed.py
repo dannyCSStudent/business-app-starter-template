@@ -1,13 +1,13 @@
 import argparse
 
-from postgrest.exceptions import APIError
-
 from app.db.supabase_client import supabase
 
 clients = [
     {
         "name": "Acorn Atelier",
         "email": "ops@acornatelier.com",
+        "profile_image_url": "https://randomuser.me/api/portraits/women/44.jpg",
+        "banner_image_url": "https://picsum.photos/id/1011/1200/360",
         "status": "active",
         "notes": "Priority account focused on onboarding and expansion scope.",
         "last_contacted_at": "2026-03-21T10:00:00Z",
@@ -15,12 +15,16 @@ clients = [
     {
         "name": "Blue Peak Logistics",
         "phone": "(312) 555-0184",
+        "profile_image_url": "https://randomuser.me/api/portraits/men/32.jpg",
+        "banner_image_url": "https://picsum.photos/id/1031/1200/360",
         "status": "lead",
         "notes": "Waiting on budget confirmation before proposal review.",
     },
     {
         "name": "Fern Harbor Dental",
         "email": "frontdesk@fernharbor.example",
+        "profile_image_url": "https://randomuser.me/api/portraits/women/68.jpg",
+        "banner_image_url": "https://picsum.photos/id/1040/1200/360",
         "status": "completed",
         "notes": "Project completed and handed off successfully.",
         "last_contacted_at": "2026-03-14T15:30:00Z",
@@ -111,10 +115,10 @@ def insert_activity(client_map):
                 "timestamp": item["timestamp"],
             }
         )
-        try:
-            supabase.table("client_activity").insert(payload).execute()
-        except Exception as exc:
-            raise SystemExit(f"client_activity insert failed: {exc}")
+    try:
+        supabase.table("client_activity").insert(payload).execute()
+    except Exception as exc:
+        raise SystemExit(f"client_activity insert failed: {exc}")
 
 
 

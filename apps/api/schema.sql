@@ -31,6 +31,8 @@ create table if not exists public.clients (
   name text not null,
   email text,
   phone text,
+  profile_image_url text,
+  banner_image_url text,
   status client_status not null default 'lead',
   notes text,
   last_contacted_at timestamptz,
@@ -38,6 +40,9 @@ create table if not exists public.clients (
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
+
+alter table public.clients add column if not exists profile_image_url text;
+alter table public.clients add column if not exists banner_image_url text;
 
 create index if not exists clients_email_idx on public.clients (email);
 create index if not exists clients_status_idx on public.clients (status);

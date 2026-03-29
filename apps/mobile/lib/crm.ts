@@ -15,6 +15,8 @@ export type Client = {
   name: string;
   email?: string;
   phone?: string;
+  profile_image_url?: string;
+  banner_image_url?: string;
   status: ClientStatus;
   notes?: string;
   last_contacted_at?: string;
@@ -67,6 +69,8 @@ export const fallbackClients: Client[] = [
     id: 'sample-1',
     name: 'Acorn Atelier',
     email: 'ops@acornatelier.com',
+    profile_image_url: 'https://randomuser.me/api/portraits/women/44.jpg',
+    banner_image_url: 'https://picsum.photos/id/1011/1200/360',
     status: 'active',
     notes: 'Priority account focused on onboarding and expansion scope.',
     last_contacted_at: '2026-03-21T10:00:00.000Z',
@@ -79,6 +83,8 @@ export const fallbackClients: Client[] = [
     id: 'sample-2',
     name: 'Blue Peak Logistics',
     phone: '(312) 555-0184',
+    profile_image_url: 'https://randomuser.me/api/portraits/men/32.jpg',
+    banner_image_url: 'https://picsum.photos/id/1031/1200/360',
     status: 'lead',
     notes: 'Waiting on budget confirmation before proposal review.',
     tags: [{ id: 'follow-up', name: 'Follow Up', color: '#f59e0b' }],
@@ -87,6 +93,8 @@ export const fallbackClients: Client[] = [
     id: 'sample-3',
     name: 'Fern Harbor Dental',
     email: 'frontdesk@fernharbor.example',
+    profile_image_url: 'https://randomuser.me/api/portraits/women/68.jpg',
+    banner_image_url: 'https://picsum.photos/id/1040/1200/360',
     status: 'completed',
     notes: 'Project completed and handed off successfully.',
     last_contacted_at: '2026-03-14T15:30:00.000Z',

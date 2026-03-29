@@ -1,401 +1,568 @@
-# DESIGN_HANDOFF.md — CRM Template UI System Specification
+# DESIGN_HANDOFF.md
 
-This document defines the visual direction and UI expectations for the Small Business Client Tracker system.
+## CRM Template V1 Design Brief
 
-It is used by:
+This document is the design handoff brief for the Small Business Client Tracker system.
 
-design teams
+It is intended for:
 
-frontend engineers
+- design teams
+- frontend engineers
+- product collaborators
+- AI implementation agents
 
-Codex AI agents
+The goal of this document is to define the V1 product surface, design priorities, reusable system requirements, and interaction expectations clearly enough that design work can begin without re-scoping the product.
 
-product collaborators
+## 1. Product Context
 
----
+### Product Name
 
-# Project Identity
+Northstar CRM
 
-Product Type:
+### Product Type
 
-Small Business Client Tracker CRM Template
+Small Business Client Tracker CRM template
 
-Platform Targets:
+### Platform Priority
 
-Mobile (primary)
+- Mobile is the primary product experience.
+- Web is the secondary operational dashboard.
+- The system should be reusable for future white-label or multi-tenant deployments.
 
-Web dashboard (secondary)
+### Primary Users
 
-Future:
+- small business owners
+- operators
+- account managers
+- client success leads
 
-multi-tenant SaaS deployments
+### Primary Jobs To Be Done
 
-white-label client systems
+- track client records quickly
+- log interactions with minimal friction
+- review the relationship timeline
+- identify follow-ups that need action
+- monitor overall pipeline health
 
----
-
-# Design Objective
+## 2. Design Objective
 
 Create a premium SaaS-grade interface that feels:
 
-fast
+- fast
+- calm
+- intelligent
+- modern
+- trustworthy
+- professional
 
-calm
+The visual and interaction quality should compete with products such as:
 
-intelligent
+- Linear
+- Notion
+- Stripe Dashboard
+- Vercel Dashboard
+- Attio CRM
 
-modern
+The final result must feel like a production product, not a generic starter dashboard.
 
-trustworthy
+## 3. Core UX Principles
 
-professional
+- mobile-first layout decisions
+- minimal cognitive load
+- clear hierarchy
+- timeline-centric workflows
+- fast navigation
+- strong typography rhythm
+- subtle motion feedback
+- dense information without visual clutter
 
-The interface must visually compete with:
+## 4. V1 Product Scope
 
-Linear
+This section defines the product surface that design should cover for the first handoff.
 
-Notion
+### In Scope: Mobile
 
-Stripe Dashboard
+- Client List
+- Client Detail
+- Activity Timeline
+- Add Client
+- Edit Client
+- Tag Manager
+- Search and Filters
+- Follow-up Reminders
 
-Vercel Dashboard
+### In Scope: Web
 
-Attio CRM
+- Pipeline Overview
+- Activity Panel
+- Follow-up Alerts Panel
+- Team Insights Panel
+- Conversion Metrics Panel
 
----
+### Out of Scope for This Handoff
 
-# Primary UX Principles
+- role-based permissions design
+- onboarding flows
+- billing or account settings
+- notification center beyond in-context reminders
+- advanced reporting customization
+- multi-tenant admin interfaces
 
-Mobile-first layout
+If design work explores these areas, it should be clearly labeled as future-facing and not block V1 delivery.
 
-minimal cognitive load
+## 5. Signature Experience
 
-clear hierarchy
+The activity timeline is the signature experience of the CRM.
 
-timeline-centric workflows
+It must feel premium, highly readable, and fast to scan. It should support:
 
-fast navigation
+- interaction icons
+- timestamps
+- author attribution
+- notes preview
+- expandable entries
+- filtering by interaction type
+- excellent scroll performance
+- obvious hierarchy between recent and older events
 
-strong typography rhythm
+If design time is limited, prioritize timeline quality over lower-value decorative work.
 
-subtle motion feedback
+## 6. Primary User Flows
 
----
+Designers should use these as canonical V1 flows.
 
-# Core Screens
+### Flow A: Find a Client and Review Context
 
-Mobile:
+1. Open client list
+2. Search or filter by status/tag/name
+3. Open a client record
+4. Review profile summary and latest activity
+5. Scan timeline for recent context
 
-Client List
+### Flow B: Log a New Interaction
 
-Client Detail
+1. Open client detail
+2. Trigger add activity action
+3. Select interaction type
+4. Enter notes
+5. Save
+6. Confirm new activity appears in timeline immediately
 
-Activity Timeline
+### Flow C: Update Client Status
 
-Add Client
+1. Open client detail or dashboard card
+2. Change status
+3. Save
+4. Confirm updated status in all relevant views
 
-Edit Client
+### Flow D: Add or Remove Tags
 
-Tag Manager
+1. Open client detail or tag controls
+2. Add or remove tag
+3. Confirm tag chip updates immediately
+4. Verify filters reflect the change
 
-Search / Filters
+### Flow E: Review Follow-Ups Due
 
-Follow-up Reminders
+1. Open dashboard or reminders view
+2. See prioritized follow-up items
+3. Open affected client
+4. Log contact or reschedule next action
 
-Web Dashboard:
+## 7. Screen Requirements
 
-Pipeline Overview
+These are the minimum design expectations for each core screen.
 
-Activity Heatmap
+### Mobile: Client List
 
-Recent Interactions Panel
+Must include:
 
-Follow-up Alerts Panel
+- searchable client list
+- status visibility
+- tag visibility
+- last-contact or next-action context
+- entry point to add client
+- empty state
 
-Team Insights Panel
+Must optimize for:
 
-Conversion Metrics Panel
+- one-handed scanning
+- fast filtering
+- clear row/card hierarchy
 
----
+### Mobile: Client Detail
 
-# Design System Requirements
+Must include:
 
-Designers must define:
+- client identity and contact summary
+- status control
+- tag management entry
+- quick action entry points
+- timeline preview or embedded timeline
 
-Color palette
+Must optimize for:
 
-Typography scale
+- low-friction updates
+- readable grouped information
+- a strong primary action hierarchy
 
-Spacing scale
+### Mobile: Activity Timeline
 
-Border radius system
+Must include:
 
-Elevation/shadow system
+- chronological entries
+- interaction type indicators
+- note preview
+- timestamp
+- expansion behavior
+- filter controls
 
-Icon style direction
+### Mobile: Add and Edit Client
 
-Interaction animation style
+Must include:
 
-Light mode + dark mode compatibility
+- primary fields
+- status selection
+- contact fields
+- notes support
+- validation states
+- success feedback
 
----
+### Mobile: Tag Manager
 
-# Component Inventory
+Must include:
 
-Required reusable components:
+- list of tags
+- create/edit/delete states
+- color usage rules
+- assignment-friendly presentation
 
-Primary Button
+### Mobile: Search and Filters
 
-Secondary Button
+Must include:
 
-Icon Button
+- keyword search
+- status filters
+- tag filters
+- clear reset behavior
 
-Card Container
+### Mobile: Follow-Up Reminders
 
-Client Card
+Must include:
 
-Activity Timeline Item
+- prioritized due items
+- urgency cue
+- action to open client
+- action to resolve/log follow-up
 
-Tag Chip
+### Web: Pipeline Overview
 
-Status Badge
+Must include:
 
-Modal
+- top-level metrics
+- status distribution
+- recent client visibility
+- fast drill-in paths
 
-Drawer
+### Web: Activity Panel
 
-Bottom Sheet (mobile)
+Must include:
 
-Floating Action Button
+- recent interactions
+- filtering
+- density suitable for power users
+- direct links into editing or detail views
 
-Search Input
+### Web: Follow-Up Alerts Panel
 
-Filter Panel
+Must include:
 
-Dropdown Select
+- overdue items
+- due today items
+- next-up items
+- prioritization cues
 
-Avatar
+### Web: Team Insights Panel
 
-Empty State
+Must include:
 
-Loading Skeleton
+- operational summaries
+- light analytical framing
+- room for future expansion without redesign
 
-Toast Notification
+### Web: Conversion Metrics Panel
 
-Confirmation Dialog
+Must include:
 
----
+- lead to active visibility
+- active to completed visibility
+- simple trend or snapshot framing
 
-# Timeline UI Requirements
+## 8. Required States
 
-Timeline must support:
+Every core screen should define the following when applicable:
 
-interaction icons
+- default populated state
+- loading state
+- empty state
+- error state
+- success confirmation state
 
-timestamps
+### Required Empty States
 
-author attribution
-
-notes preview
-
-expandable entries
-
-filter by interaction type
-
-scroll performance optimization
-
-This is the signature experience of the CRM.
-
-It must feel premium.
-
----
-
-# Color Usage Guidelines
-
-Status colors required:
-
-Lead
-
-Active
-
-Customer
-
-Inactive
-
-Completed
-
-Follow-up Due
-
-Priority Tag
-
-Avoid:
-
-oversaturated palettes
-
-harsh contrast combinations
-
-visual clutter
-
-Prefer:
-
-soft neutrals
-
-layered surfaces
-
-semantic accent colors
-
----
-
-# Typography Direction
-
-Font should feel similar to:
-
-Inter
-
-Geist
-
-SF Pro style spacing
-
-Hierarchy levels required:
-
-Dashboard heading
-
-Section heading
-
-Card heading
-
-Body text
-
-Caption text
-
-Micro-label text
-
----
-
-# Motion Guidelines
-
-Use motion sparingly.
-
-Allowed:
-
-card hover lift
-
-timeline expand animation
-
-modal transitions
-
-button press feedback
-
-skeleton loading shimmer
-
-Avoid:
-
-heavy animations
-
-page transition delays
-
-excessive bounce effects
-
----
-
-# Layout Grid
-
-Mobile spacing baseline:
-
-4pt scale
-
-Web spacing baseline:
-
-8pt scale
-
-Max content width (web):
-
-1280px
-
----
-
-# Navigation Pattern
-
-Mobile:
-
-bottom navigation
-
-floating action button
-
-gesture-safe margins
-
-Web:
-
-left sidebar navigation
-
-top analytics header
-
-context panels
-
----
-
-# Empty States Required
-
-Client list empty state
-
-Search empty state
-
-No activity state
-
-No follow-ups due state
-
-No analytics data state
+- client list empty
+- search empty
+- no activity
+- no follow-ups due
+- no analytics data
 
 Each empty state should include:
 
-illustration placeholder
+- illustration or visual placeholder area
+- primary action button
+- secondary explanation text
 
-primary action button
+### Loading States
 
-secondary explanation text
+Use skeletons where layout continuity matters:
 
----
+- client cards
+- dashboard metrics
+- timeline entries
+- detail sections
 
-# Accessibility Requirements
+### Error States
 
-Contrast ratio compliant
+Error states should avoid generic dead ends. They should provide:
 
-tap targets minimum 44px
+- clear explanation
+- retry action
+- preserved context where possible
 
-keyboard navigation support (web)
+## 9. Design System Requirements
 
-screen reader friendly labels
+Design must define a reusable design system for this product rather than a page-specific visual pass.
 
-dark mode compatibility required
+### Required Design Tokens
 
----
+- color palette
+- typography scale
+- spacing scale
+- border radius system
+- elevation and shadow system
+- icon style direction
+- motion guidance
+- status semantics
 
-# Brand Flexibility Requirement
+### Required Modes
 
-System must support:
+- light mode
+- dark mode
 
-client rebranding
+### Brand Flexibility
 
-color overrides
+The design system must support:
 
-logo replacement
+- logo replacement
+- color overrides
+- client rebranding
+- reuse across multiple companies
 
-multi-company reuse
+This must work without layout rewrites.
 
-without layout rewrites.
+## 10. Color Guidance
 
----
+Use a restrained, semantic palette.
 
-# Final Design Goal
+### Required Semantic Status Colors
 
-The finished UI must feel like:
+- Lead
+- Active
+- Customer
+- Inactive
+- Completed
+- Follow-up Due
+- Priority Tag
 
-a premium SaaS product
+### Avoid
 
-not a starter template
+- oversaturated palettes
+- harsh contrast combinations
+- decorative rainbow tag systems
+- unnecessary color dependence for meaning
 
-not a bootstrap dashboard
+### Prefer
 
-not a generic admin panel
+- soft neutrals
+- layered surfaces
+- semantic accent colors
+- strong contrast in key decision areas only
 
-This system will serve as the visual foundation for multiple production client deployments.
+## 11. Typography Guidance
+
+Typography should feel similar to:
+
+- Inter
+- Geist
+- SF Pro spacing behavior
+
+### Required Hierarchy Levels
+
+- dashboard heading
+- section heading
+- card heading
+- body text
+- caption text
+- micro-label text
+
+Typography should be a major part of the product's quality signal. The interface should not rely on heavy borders or excessive color to create structure.
+
+## 12. Motion Guidance
+
+Use motion sparingly and intentionally.
+
+### Allowed
+
+- card hover lift
+- timeline expand animation
+- modal transitions
+- button press feedback
+- skeleton loading shimmer
+
+### Avoid
+
+- heavy entrance animations
+- delayed page transitions
+- excessive bounce effects
+- motion that blocks task completion
+
+## 13. Layout and Navigation
+
+### Spacing Baseline
+
+- Mobile: 4pt scale
+- Web: 8pt scale
+
+### Web Max Content Width
+
+1280px
+
+### Navigation Pattern: Mobile
+
+- bottom navigation
+- floating action button where appropriate
+- gesture-safe margins
+
+### Navigation Pattern: Web
+
+- left sidebar navigation
+- top analytics header
+- context panels
+
+## 14. Component Inventory
+
+The following components should be designed as reusable patterns, not one-off page elements:
+
+- Primary Button
+- Secondary Button
+- Icon Button
+- Card Container
+- Client Card
+- Activity Timeline Item
+- Tag Chip
+- Status Badge
+- Modal
+- Drawer
+- Bottom Sheet
+- Floating Action Button
+- Search Input
+- Filter Panel
+- Dropdown Select
+- Avatar
+- Empty State
+- Loading Skeleton
+- Toast Notification
+- Confirmation Dialog
+
+For each component, design should define:
+
+- default appearance
+- hover or pressed state where relevant
+- disabled state
+- loading state where relevant
+- dark mode behavior
+- responsive behavior if it changes by platform
+
+## 15. Accessibility Requirements
+
+- contrast ratio compliant
+- minimum 44px touch targets
+- keyboard navigation support on web
+- screen reader friendly labels
+- dark mode compatibility
+- status meaning not conveyed by color alone
+
+## 16. Engineering Context
+
+The current product already includes working web and mobile shells with seeded CRM-style data and CRUD-oriented structures.
+
+Design should treat the current implementation as a functional prototype, not as the visual baseline.
+
+Areas already represented in code:
+
+- client list and dashboard cards
+- activity feed
+- record editing and record management
+- tags and status handling
+- mobile CRM shell components
+
+Design is free to substantially improve layout, information hierarchy, and interaction patterns as long as the V1 scope remains intact.
+
+## 17. Handoff Deliverables
+
+The design team should deliver:
+
+- sitemap or screen map for V1
+- core user flow diagrams
+- low-fidelity wireframes for all in-scope screens
+- high-fidelity designs for primary flows
+- design tokens
+- component library specifications
+- responsive guidance for mobile and web
+- light and dark mode decisions
+- redlines or implementation notes for interaction-heavy areas
+
+### Priority Order
+
+1. activity timeline
+2. mobile client list
+3. mobile client detail
+4. web pipeline overview
+5. follow-up and filter patterns
+6. secondary panels and analytics
+
+## 18. Acceptance Criteria for Design Completion
+
+The V1 handoff is considered ready when:
+
+- all in-scope screens are designed
+- all required states are covered
+- all core flows can be completed without ambiguity
+- token definitions exist
+- reusable component rules exist
+- timeline behavior is specified clearly
+- light and dark mode are both addressed
+- engineering can identify implementation intent without guesswork
+
+## 19. Final Standard
+
+This system should feel like a premium SaaS CRM foundation suitable for multiple future client deployments.
+
+It must not feel like:
+
+- a bootstrap dashboard
+- a generic admin panel
+- a placeholder template
+- an unfinished internal tool
+
+When tradeoffs are necessary, prioritize clarity, speed, and timeline quality over novelty.

@@ -12,6 +12,7 @@ import { BadgePill } from '@/components/crm/badge-pill';
 import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
 import { CRMHero } from '@/components/crm/crm-hero';
 import { FilterChip } from '@/components/crm/filter-chip';
+import { PreferencesLink } from '@/components/crm/preferences-link';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
@@ -72,6 +73,7 @@ function useActivityFeed() {
 export default function ActivityScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
   const [query, setQuery] = useState('');
   const [selectedType, setSelectedType] = useState<ClientInteractionType | 'all'>('all');
   const { clients, activity, isFallback, isRefreshing, error, refresh } = useActivityFeed();
@@ -105,13 +107,16 @@ export default function ActivityScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}>
       <CRMHero
-        backgroundColor="#E7EDF7"
+        backgroundColor={colorScheme === 'dark' ? '#241F31' : '#E7E1F3'}
         badge={
-          <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
-          {isFallback ? 'Fallback feed' : 'Live activity'}
-          </BadgePill>
+          <View style={styles.heroMeta}>
+            <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
+              {isFallback ? 'Fallback feed' : 'Live activity'}
+            </BadgePill>
+            <PreferencesLink />
+          </View>
         }
-        copy="Recent CRM work with quick filtering for follow-up and recent interactions."
+        copy="Recent CRM work with fast filtering for follow-up risk and recent relationship activity."
         metrics={[
           { label: 'Follow Ups', tone: 'dark', value: followUpCount },
           { label: 'Last 7 Days', value: recentCount },
@@ -128,8 +133,8 @@ export default function ActivityScreen() {
           styles.searchInput,
           {
             color: colors.text,
-            borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-            backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
+            borderColor: colorScheme === 'dark' ? '#334155' : 'rgba(24,33,43,0.1)',
+            backgroundColor: colorScheme === 'dark' ? '#1A2530' : 'rgba(255,255,255,0.9)',
           },
         ]}
       />
@@ -160,20 +165,41 @@ export default function ActivityScreen() {
       <Link href="/actions/activity" style={styles.quickActionLink}>
         <ThemedText style={styles.quickActionLinkText}>Log Activity</ThemedText>
       </Link>
-      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+      {error ? (
+        <View style={[styles.feedbackCardError, isDark && styles.feedbackCardErrorDark]}>
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        </View>
+      ) : null}
 
       {filteredActivity.map((item) => {
         const clientName =
           clients.find((client) => client.id === item.client_id)?.name ?? 'Unknown client';
+        const tone =
+          item.interaction_type === 'follow_up'
+            ? { bg: '#FDECC8', text: '#9A5A12' }
+            : item.interaction_type === 'meeting'
+              ? { bg: '#DCECF2', text: '#27566B' }
+              : item.interaction_type === 'email'
+                ? { bg: '#E7E4F7', text: '#5E4C9B' }
+                : item.interaction_type === 'call'
+                  ? { bg: '#D8EEDF', text: '#1F7A61' }
+                  : { bg: '#E8ECF0', text: '#526171' };
 
         return (
-          <ThemedView key={item.id} style={styles.activityCard}>
+          <ThemedView key={item.id} style={[styles.activityCard, isDark && styles.activityCardDark]}>
             <View style={styles.activityHeader}>
-              <View style={styles.activityText}>
+              <View style={styles.activityIdentity}>
+                <View style={styles.activityDot} />
+                <View style={styles.activityText}>
                 <ThemedText type="defaultSemiBold">{clientName}</ThemedText>
-                <ThemedText style={styles.activityType}>
+                  <ThemedText
+                    style={[
+                      styles.activityType,
+                      { backgroundColor: tone.bg, color: tone.text },
+                    ]}>
                   {item.interaction_type.replace('_', ' ')}
                 </ThemedText>
+                </View>
               </View>
               <ThemedText style={styles.activityDate}>
                 {new Date(item.timestamp).toLocaleDateString()}
@@ -198,8 +224,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 32,
-    gap: 16,
+    paddingBottom: 40,
+    gap: 18,
   },
   badgeWarn: {
     backgroundColor: '#FEF3C7',
@@ -209,9 +235,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCFCE7',
     color: '#166534',
   },
+  heroMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
@@ -228,23 +260,40 @@ const styles = StyleSheet.create({
   quickActionLink: {
     alignSelf: 'flex-start',
   },
+  feedbackCardError: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
+    backgroundColor: '#FFF1F2',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  feedbackCardErrorDark: {
+    borderColor: 'rgba(245,194,199,0.26)',
+    backgroundColor: 'rgba(127,29,29,0.26)',
+  },
   quickActionLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#18212B',
     textTransform: 'uppercase',
   },
   errorText: {
     fontSize: 13,
+    lineHeight: 18,
     color: '#B91C1C',
   },
   activityCard: {
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 28,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    gap: 10,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,251,245,0.82)',
+    gap: 12,
+  },
+  activityCardDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(24,33,43,0.82)',
   },
   activityHeader: {
     flexDirection: 'row',
@@ -252,14 +301,32 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
   },
+  activityIdentity: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    flex: 1,
+  },
+  activityDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    marginTop: 9,
+    backgroundColor: '#B85C38',
+  },
   activityText: {
     flex: 1,
-    gap: 4,
+    gap: 8,
   },
   activityType: {
     fontSize: 12,
-    color: '#64748B',
-    textTransform: 'capitalize',
+    alignSelf: 'flex-start',
+    overflow: 'hidden',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   activityDate: {
     fontSize: 12,
@@ -267,7 +334,7 @@ const styles = StyleSheet.create({
   },
   activityNotes: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 22,
     color: '#475569',
   },
   detailLink: {
@@ -276,7 +343,7 @@ const styles = StyleSheet.create({
   detailLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#18212B',
     textTransform: 'uppercase',
   },
 });

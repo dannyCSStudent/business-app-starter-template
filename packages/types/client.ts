@@ -5,6 +5,8 @@ export interface Client {
   name: string
   phone?: string
   email?: string
+  profile_image_url?: string
+  banner_image_url?: string
   status: ClientStatus
   notes?: string
   last_contacted_at?: string

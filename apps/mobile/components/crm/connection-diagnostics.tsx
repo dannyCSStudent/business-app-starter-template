@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type ConnectionDiagnosticsProps = {
   apiBaseUrl: string;
@@ -15,6 +16,8 @@ export function ConnectionDiagnostics({
   isFallback,
   label,
 }: ConnectionDiagnosticsProps) {
+  const colorScheme = useColorScheme() ?? 'light';
+  const isDark = colorScheme === 'dark';
   const [healthStatus, setHealthStatus] = useState('Checking /health...');
   const [healthOk, setHealthOk] = useState(false);
   const [dbHealthStatus, setDbHealthStatus] = useState('Checking /health/db...');
@@ -95,7 +98,7 @@ export function ConnectionDiagnostics({
   const showWarning = isFallback || !healthOk || !dbHealthOk;
 
   return (
-    <ThemedView style={styles.card}>
+    <ThemedView style={[styles.card, isDark && styles.cardDark]}>
       <ThemedText style={styles.label}>{label}</ThemedText>
       {showWarning ? (
         <ThemedView style={styles.warningCard}>
@@ -178,17 +181,23 @@ export function ConnectionDiagnostics({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 18,
-    padding: 14,
+    borderRadius: 22,
+    padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(248,250,252,0.95)',
-    gap: 6,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,251,245,0.82)',
+    gap: 8,
+  },
+  cardDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(24,33,43,0.82)',
   },
   label: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#6D7A88',
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
   },
   value: {
@@ -199,9 +208,9 @@ const styles = StyleSheet.create({
   retryButton: {
     alignSelf: 'flex-start',
     borderRadius: 999,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#18212B',
   },
   retryButtonDisabled: {
     opacity: 0.7,
@@ -213,7 +222,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   warningCard: {
-    borderRadius: 14,
+    borderRadius: 18,
     padding: 12,
     backgroundColor: '#FEF3C7',
     borderWidth: 1,

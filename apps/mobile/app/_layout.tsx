@@ -3,18 +3,38 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemePreferenceProvider } from '@/lib/theme-preference';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  return (
+    <ThemePreferenceProvider>
+      <ThemedRootLayout />
+    </ThemePreferenceProvider>
+  );
+}
+
+function ThemedRootLayout() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: isDark ? '#18212B' : '#FFF8F2' },
+          headerTintColor: isDark ? '#F7F1E8' : '#18212B',
+          headerTitleStyle: {
+            fontWeight: '700',
+          },
+        }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="modal"
@@ -32,8 +52,9 @@ export default function RootLayout() {
           name="actions/tags"
           options={{ presentation: 'modal', title: 'Manage Tags' }}
         />
+        <Stack.Screen name="preferences" options={{ title: 'Preferences' }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </ThemeProvider>
   );
 }

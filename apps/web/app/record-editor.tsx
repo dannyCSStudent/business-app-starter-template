@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type {
   Client,
   ClientActivity,
@@ -59,6 +60,14 @@ export function RecordEditor({
   const [clientStatus, setClientStatus] = useState<ClientStatus>(defaultClient?.status ?? "lead");
   const [clientEmail, setClientEmail] = useState(defaultClient?.email ?? "");
   const [clientPhone, setClientPhone] = useState(defaultClient?.phone ?? "");
+  const [clientProfileImageUrl, setClientProfileImageUrl] = useState(
+    defaultClient?.profile_image_url ?? "",
+  );
+  const [clientBannerImageUrl, setClientBannerImageUrl] = useState(
+    defaultClient?.banner_image_url ?? "",
+  );
+  const [clientProfileImageFailed, setClientProfileImageFailed] = useState(false);
+  const [clientBannerImageFailed, setClientBannerImageFailed] = useState(false);
   const [clientNotes, setClientNotes] = useState(defaultClient?.notes ?? "");
   const [clientLastContactedAt, setClientLastContactedAt] = useState(
     toLocalDatetimeValue(defaultClient?.last_contacted_at),
@@ -90,13 +99,18 @@ export function RecordEditor({
   return (
     <section
       id="record-editor"
-      className="mt-10 rounded-[30px] border border-black/8 bg-[color:var(--color-surface)] p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur"
+      className="rounded-[34px] border border-(--color-line) bg-(--color-surface) p-6 shadow-(--shadow-md) backdrop-blur"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-slate-950">Edit Records</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Update status and notes without recreating records.
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Edit
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Edit records
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Direct update surfaces for contact, status, notes, and timeline entries.
           </p>
         </div>
         {isFallback ? (
@@ -119,26 +133,39 @@ export function RecordEditor({
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
+            const payload: Record<string, string | null> & { status: ClientStatus } = {
+              status: clientStatus,
+              email: clientEmail || null,
+              phone: clientPhone || null,
+              notes: clientNotes || null,
+              last_contacted_at: clientLastContactedAt
+                ? new Date(clientLastContactedAt).toISOString()
+                : null,
+            };
+
+            if (clientProfileImageUrl.trim()) {
+              payload.profile_image_url = clientProfileImageUrl.trim();
+            }
+
+            if (clientBannerImageUrl.trim()) {
+              payload.banner_image_url = clientBannerImageUrl.trim();
+            }
+
             await patchJson(
               `client:${selectedClientId}`,
               `/clients/${selectedClientId}`,
-              {
-                status: clientStatus,
-                email: clientEmail || null,
-                phone: clientPhone || null,
-                notes: clientNotes || null,
-                last_contacted_at: clientLastContactedAt
-                  ? new Date(clientLastContactedAt).toISOString()
-                  : null,
-              },
+              payload,
               "Client updated.",
             );
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Update Client</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Client
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Update client</h4>
           <div className="mt-4 space-y-3">
             <select
               required
@@ -156,12 +183,16 @@ export function RecordEditor({
                 setClientStatus(nextClient.status);
                 setClientEmail(nextClient.email ?? "");
                 setClientPhone(nextClient.phone ?? "");
+                setClientProfileImageUrl(nextClient.profile_image_url ?? "");
+                setClientBannerImageUrl(nextClient.banner_image_url ?? "");
+                setClientProfileImageFailed(false);
+                setClientBannerImageFailed(false);
                 setClientNotes(nextClient.notes ?? "");
                 setClientLastContactedAt(
                   toLocalDatetimeValue(nextClient.last_contacted_at),
                 );
               }}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
@@ -173,7 +204,7 @@ export function RecordEditor({
               name="status"
               value={clientStatus}
               onChange={(event) => setClientStatus(event.target.value as ClientStatus)}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -187,21 +218,84 @@ export function RecordEditor({
               value={clientEmail}
               onChange={(event) => setClientEmail(event.target.value)}
               placeholder="Email"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
             <input
               name="phone"
               value={clientPhone}
               onChange={(event) => setClientPhone(event.target.value)}
               placeholder="Phone"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
+            <input
+              name="profile_image_url"
+              value={clientProfileImageUrl}
+              onChange={(event) => {
+                setClientProfileImageFailed(false);
+                setClientProfileImageUrl(event.target.value);
+              }}
+              placeholder="Profile image URL"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            />
+            <p className="text-xs leading-5 text-slate-500">
+              Profile image: square headshot works best. Use a direct `https://` image URL.
+            </p>
+            <input
+              name="banner_image_url"
+              value={clientBannerImageUrl}
+              onChange={(event) => {
+                setClientBannerImageFailed(false);
+                setClientBannerImageUrl(event.target.value);
+              }}
+              placeholder="Banner image URL"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            />
+            <p className="text-xs leading-5 text-slate-500">
+              Banner image: wide image works best, roughly 3:1 or 4:1.
+            </p>
+            {clientProfileImageUrl || clientBannerImageUrl ? (
+              <div className="rounded-[22px] border border-(--color-line) bg-(--color-surface-strong) p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Image preview
+                </p>
+                <div className="mt-3">
+                  <div className="relative h-24 overflow-hidden rounded-[18px] bg-slate-200">
+                    {clientBannerImageUrl && !clientBannerImageFailed ? (
+                      <Image
+                        src={clientBannerImageUrl}
+                        alt="Banner preview"
+                        fill
+                        sizes="320px"
+                        className="object-cover"
+                        onError={() => setClientBannerImageFailed(true)}
+                      />
+                    ) : null}
+                  </div>
+                  <div className="-mt-7 ml-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-[18px] border-2 border-white bg-[#F3D8CA] text-sm font-semibold text-[#9F4B2B]">
+                    {clientProfileImageUrl && !clientProfileImageFailed ? (
+                      <Image
+                        src={clientProfileImageUrl}
+                        alt="Profile preview"
+                        width={56}
+                        height={56}
+                        className="h-full w-full object-cover"
+                        onError={() => setClientProfileImageFailed(true)}
+                      />
+                    ) : (
+                      (clients.find((client) => client.id === selectedClientId)?.name ?? "?")
+                        .slice(0, 1)
+                        .toUpperCase()
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <input
               name="last_contacted_at"
               type="datetime-local"
               value={clientLastContactedAt}
               onChange={(event) => setClientLastContactedAt(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             />
             <textarea
               name="notes"
@@ -209,7 +303,7 @@ export function RecordEditor({
               value={clientNotes}
               onChange={(event) => setClientNotes(event.target.value)}
               placeholder="Replace client notes"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
           <button
@@ -222,7 +316,7 @@ export function RecordEditor({
         </form>
 
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
             await patchJson(
@@ -237,7 +331,10 @@ export function RecordEditor({
             );
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Update Activity</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Timeline
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Update activity</h4>
           <div className="mt-4 space-y-3">
             <select
               required
@@ -256,7 +353,7 @@ export function RecordEditor({
                 setActivityNotes(nextActivity.notes ?? "");
                 setActivityTimestamp(toLocalDatetimeValue(nextActivity.timestamp));
               }}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {activity.map((item) => {
                 const clientName =
@@ -275,7 +372,7 @@ export function RecordEditor({
               onChange={(event) =>
                 setActivityInteractionType(event.target.value as ClientInteractionType)
               }
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {interactionOptions.map((option) => (
                 <option key={option} value={option}>
@@ -288,7 +385,7 @@ export function RecordEditor({
               type="datetime-local"
               value={activityTimestamp}
               onChange={(event) => setActivityTimestamp(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             />
             <textarea
               required
@@ -297,7 +394,7 @@ export function RecordEditor({
               value={activityNotes}
               onChange={(event) => setActivityNotes(event.target.value)}
               placeholder="Replace activity notes"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
           <button

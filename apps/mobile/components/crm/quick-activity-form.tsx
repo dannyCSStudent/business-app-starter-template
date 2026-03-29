@@ -38,6 +38,7 @@ export function QuickActivityForm({
 }: QuickActivityFormProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
   const [interactionType, setInteractionType] = useState<ClientInteractionType>('note');
   const [notes, setNotes] = useState('');
 
@@ -64,8 +65,9 @@ export function QuickActivityForm({
   };
 
   return (
-    <ThemedView style={styles.section}>
-      <ThemedText type="subtitle">Quick Activity</ThemedText>
+    <ThemedView style={[styles.section, isDark && styles.sectionDark]}>
+      <ThemedText style={styles.sectionLabel}>Timeline</ThemedText>
+      <ThemedText type="subtitle">Quick activity</ThemedText>
       {clients ? (
         <View style={styles.chipRow}>
           {clients.map((client) => (
@@ -88,6 +90,7 @@ export function QuickActivityForm({
             disabled={isFallback || isPending}
             style={[
               styles.actionChip,
+              isDark && styles.actionChipDark,
               interactionType === option && styles.quickActionSelected,
             ]}>
             <ThemedText
@@ -111,8 +114,8 @@ export function QuickActivityForm({
           styles.activityInput,
           {
             color: colors.text,
-            borderColor: colorScheme === 'dark' ? '#334155' : '#CBD5E1',
-            backgroundColor: colorScheme === 'dark' ? '#0F172A' : '#FFFFFF',
+            borderColor: colorScheme === 'dark' ? '#334155' : 'rgba(24,33,43,0.1)',
+            backgroundColor: colorScheme === 'dark' ? '#1A2530' : 'rgba(255,255,255,0.9)',
           },
         ]}
       />
@@ -130,12 +133,24 @@ export function QuickActivityForm({
 
 const styles = StyleSheet.create({
   section: {
-    borderRadius: 24,
-    padding: 16,
+    borderRadius: 28,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    gap: 12,
+    borderColor: 'rgba(24,33,43,0.08)',
+    backgroundColor: 'rgba(255,251,245,0.82)',
+    gap: 14,
+  },
+  sectionDark: {
+    borderColor: 'rgba(244,237,228,0.08)',
+    backgroundColor: 'rgba(24,33,43,0.82)',
+  },
+  sectionLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: '#6D7A88',
   },
   detailMuted: {
     fontSize: 13,
@@ -149,36 +164,40 @@ const styles = StyleSheet.create({
   actionChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: 'rgba(24,33,43,0.1)',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.88)',
+  },
+  actionChipDark: {
+    borderColor: 'rgba(244,237,228,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   actionChipText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
+    color: '#526171',
     textTransform: 'capitalize',
   },
   quickActionSelected: {
-    backgroundColor: '#DBEAFE',
-    borderColor: '#2563EB',
+    backgroundColor: '#F3D8CA',
+    borderColor: '#B85C38',
   },
   quickActionSelectedText: {
-    color: '#1D4ED8',
+    color: '#9F4B2B',
   },
   activityInput: {
     minHeight: 92,
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     textAlignVertical: 'top',
   },
   primaryButton: {
-    borderRadius: 16,
-    backgroundColor: '#0F172A',
+    borderRadius: 18,
+    backgroundColor: '#18212B',
     paddingHorizontal: 16,
     paddingVertical: 14,
     alignItems: 'center',

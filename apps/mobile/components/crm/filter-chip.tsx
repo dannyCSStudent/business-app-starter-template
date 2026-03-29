@@ -23,21 +23,21 @@ const styles = StyleSheet.create({
   chip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(24,33,43,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.86)',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
   },
   chipSelected: {
-    backgroundColor: '#DBEAFE',
-    borderColor: '#2563EB',
+    backgroundColor: '#F3D8CA',
+    borderColor: '#B85C38',
   },
   text: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#475569',
+    color: '#526171',
   },
   textSelected: {
-    color: '#1D4ED8',
+    color: '#9F4B2B',
   },
 });

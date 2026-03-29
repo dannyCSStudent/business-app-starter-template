@@ -47,8 +47,8 @@ export default function PortfolioPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 py-16">
-        <div className="mx-auto max-w-5xl space-y-12 px-4 text-slate-100">
+    <div className="min-h-screen py-16">
+      <div className="mx-auto max-w-5xl space-y-12 px-4 text-[color:var(--color-foreground)]">
         <Hero
           eyebrow="Portfolio"
           title="Three demos that show my energy book with a single click"
@@ -59,24 +59,24 @@ export default function PortfolioPage() {
           {projects.map((project) => (
             <div
               key={project.title}
-              className="transform rounded-3xl border border-slate-800 bg-white/5 p-6 shadow-lg shadow-slate-900/30 transition hover:-translate-y-1 hover:border-slate-600">
+              className="transform rounded-3xl border border-[color:var(--color-line)] bg-[color:var(--color-surface)] p-6 shadow-[var(--shadow-md)] transition hover:-translate-y-1 hover:border-[color:var(--color-line-strong)]">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl font-semibold text-slate-100">{project.title}</h2>
-                <span className="text-xs uppercase tracking-wider text-slate-500">{project.linkLabel}</span>
+                <h2 className="text-xl font-semibold text-slate-950 dark:text-stone-100">{project.title}</h2>
+                <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">{project.linkLabel}</span>
               </div>
-              <p className="mt-4 text-sm text-slate-300">{project.description}</p>
+              <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{project.description}</p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {project.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-slate-400">
+                    className="rounded-full border border-[color:var(--color-line)] px-3 py-1 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
                     {tag}
                   </span>
                 ))}
               </div>
               <Link
                 href={project.href}
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-400 hover:text-white">
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--color-accent-cool)] hover:text-[color:var(--color-foreground)]">
                 {project.linkLabel}
                 <span aria-hidden>→</span>
               </Link>
@@ -84,16 +84,18 @@ export default function PortfolioPage() {
           ))}
         </div>
 
-        <div className="space-y-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+        <div className="space-y-6 rounded-3xl border border-[color:var(--color-line)] bg-[color:var(--color-surface)] p-8 shadow-[var(--shadow-md)]">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
             Demo script
           </p>
-          <h2 className="text-2xl font-semibold text-white">Run through in under five minutes</h2>
+          <h2 className="text-2xl font-semibold text-slate-950 dark:text-stone-100">Run through in under five minutes</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {demoSteps.map((step) => (
-              <div key={step.title} className="rounded-2xl border border-slate-800 bg-white/5 p-5">
-                <p className="text-xs uppercase tracking-wider text-slate-500">{step.title}</p>
-                <p className="mt-2 text-sm text-slate-300">{step.detail}</p>
+              <div
+                key={step.title}
+                className="rounded-2xl border border-[color:var(--color-line)] bg-[color:var(--color-surface-strong)] p-5">
+                <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">{step.title}</p>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{step.detail}</p>
               </div>
             ))}
           </div>

@@ -22,6 +22,7 @@ type CRMHeroProps = {
 export function CRMHero({ backgroundColor, badge, copy, metrics = [], title }: CRMHeroProps) {
   return (
     <ThemedView style={[styles.hero, { backgroundColor }]}>
+      <ThemedText style={styles.eyebrow}>Client workspace</ThemedText>
       <ThemedText type="title" style={styles.title}>
         {title}
       </ThemedText>
@@ -51,19 +52,33 @@ export function CRMHero({ backgroundColor, badge, copy, metrics = [], title }: C
 
 const styles = StyleSheet.create({
   hero: {
-    borderRadius: 28,
-    padding: 20,
+    borderRadius: 32,
+    padding: 22,
     borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    gap: 12,
+    borderColor: 'rgba(24,33,43,0.08)',
+    gap: 14,
+    shadowColor: '#412F1E',
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 3,
+  },
+  eyebrow: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
+    color: '#6D7A88',
+    fontWeight: '700',
   },
   title: {
     fontFamily: Fonts.rounded,
+    lineHeight: 38,
   },
   copy: {
     fontSize: 15,
-    lineHeight: 22,
-    color: '#475569',
+    lineHeight: 24,
+    color: '#4F5E6C',
   },
   metrics: {
     flexDirection: 'row',
@@ -71,19 +86,21 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(24,33,43,0.06)',
   },
   metricCardDark: {
     backgroundColor: '#0F172A',
   },
   metricLabel: {
-    color: '#64748B',
+    color: '#6D7A88',
     fontSize: 13,
   },
   metricValue: {
-    color: '#0F172A',
+    color: '#18212B',
     fontSize: 28,
     fontWeight: '700',
   },

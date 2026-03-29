@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type {
   Client,
   ClientActivity,
@@ -33,6 +34,11 @@ export function QuickActions({
 }) {
   const { error, success, pendingKey, runAction } = useDashboardAction(apiBaseUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientProfileImageUrl, setNewClientProfileImageUrl] = useState("");
+  const [newClientBannerImageUrl, setNewClientBannerImageUrl] = useState("");
+  const [newClientProfileImageFailed, setNewClientProfileImageFailed] = useState(false);
+  const [newClientBannerImageFailed, setNewClientBannerImageFailed] = useState(false);
 
   async function submitJson(path: string, payload: object, successMessage: string) {
     setIsSubmitting(true);
@@ -52,12 +58,18 @@ export function QuickActions({
   }
 
   return (
-    <section className="mt-10 rounded-[30px] border border-black/8 bg-[color:var(--color-surface)] p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
+    <section className="rounded-[34px] border border-(--color-line) bg-(--color-surface) p-6 shadow-(--shadow-md) backdrop-blur">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-slate-950">Quick Actions</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Post directly to the FastAPI endpoints and refresh the dashboard.
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Create
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Quick actions
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Structured creation flows for clients, tags, activity, and assignments without
+            leaving the dashboard.
           </p>
         </div>
         {isFallback ? (
@@ -78,12 +90,13 @@ export function QuickActions({
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 xl:grid-cols-2">
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
 
             await submitJson(
               "/clients/",
@@ -91,38 +104,115 @@ export function QuickActions({
                 name: String(formData.get("name") ?? ""),
                 email: String(formData.get("email") ?? "") || null,
                 phone: String(formData.get("phone") ?? "") || null,
+                ...(String(formData.get("profile_image_url") ?? "").trim()
+                  ? { profile_image_url: String(formData.get("profile_image_url")).trim() }
+                  : {}),
+                ...(String(formData.get("banner_image_url") ?? "").trim()
+                  ? { banner_image_url: String(formData.get("banner_image_url")).trim() }
+                  : {}),
                 status: String(formData.get("status") ?? "lead"),
                 notes: String(formData.get("notes") ?? "") || null,
               },
               "Client created.",
             );
 
-            event.currentTarget.reset();
+            form.reset();
+            setNewClientName("");
+            setNewClientProfileImageUrl("");
+            setNewClientBannerImageUrl("");
+            setNewClientProfileImageFailed(false);
+            setNewClientBannerImageFailed(false);
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Add Client</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Client
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Add client</h4>
           <div className="mt-4 space-y-3">
             <input
               required
               name="name"
+              value={newClientName}
+              onChange={(event) => setNewClientName(event.target.value)}
               placeholder="Client name"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
             />
             <input
               name="email"
               type="email"
               placeholder="Email"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
             />
             <input
               name="phone"
               placeholder="Phone"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
             />
+            <input
+              name="profile_image_url"
+              value={newClientProfileImageUrl}
+              onChange={(event) => {
+                setNewClientProfileImageFailed(false);
+                setNewClientProfileImageUrl(event.target.value);
+              }}
+              placeholder="Profile image URL"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+            />
+            <p className="text-xs leading-5 text-slate-500">
+              Profile image: square headshot works best. Use a direct `https://` image URL.
+            </p>
+            <input
+              name="banner_image_url"
+              value={newClientBannerImageUrl}
+              onChange={(event) => {
+                setNewClientBannerImageFailed(false);
+                setNewClientBannerImageUrl(event.target.value);
+              }}
+              placeholder="Banner image URL"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+            />
+            <p className="text-xs leading-5 text-slate-500">
+              Banner image: wide image works best, roughly 3:1 or 4:1.
+            </p>
+            {newClientProfileImageUrl || newClientBannerImageUrl ? (
+              <div className="rounded-[22px] border border-(--color-line) bg-(--color-surface-strong) p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Image preview
+                </p>
+                <div className="mt-3">
+                  <div className="relative h-24 overflow-hidden rounded-[18px] bg-slate-200">
+                    {newClientBannerImageUrl && !newClientBannerImageFailed ? (
+                      <Image
+                        src={newClientBannerImageUrl}
+                        alt="Banner preview"
+                        fill
+                        sizes="320px"
+                        className="object-cover"
+                        onError={() => setNewClientBannerImageFailed(true)}
+                      />
+                    ) : null}
+                  </div>
+                  <div className="-mt-7 ml-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-[18px] border-2 border-white bg-[#F3D8CA] text-sm font-semibold text-[#9F4B2B]">
+                    {newClientProfileImageUrl && !newClientProfileImageFailed ? (
+                      <Image
+                        src={newClientProfileImageUrl}
+                        alt="Profile preview"
+                        width={56}
+                        height={56}
+                        className="h-full w-full object-cover"
+                        onError={() => setNewClientProfileImageFailed(true)}
+                      />
+                    ) : (
+                      (newClientName || "?").slice(0, 1).toUpperCase()
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <select
               name="status"
               defaultValue="lead"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -134,7 +224,7 @@ export function QuickActions({
               name="notes"
               rows={3}
               placeholder="Notes"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
           <button
@@ -147,10 +237,11 @@ export function QuickActions({
         </form>
 
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
 
             await submitJson(
               "/tags/",
@@ -161,23 +252,26 @@ export function QuickActions({
               "Tag created.",
             );
 
-            event.currentTarget.reset();
+            form.reset();
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Add Tag</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Taxonomy
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Add tag</h4>
           <div className="mt-4 space-y-3">
             <input
               required
               name="name"
               placeholder="Tag name"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400"
             />
             <input
               required
               name="color"
               type="color"
               defaultValue="#0f172a"
-              className="h-12 w-full rounded-2xl border border-slate-200 px-2 py-2"
+              className="h-12 w-full rounded-[20px] border border-(--color-line) px-2 py-2"
             />
           </div>
           <button
@@ -190,10 +284,11 @@ export function QuickActions({
         </form>
 
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
 
             await submitJson(
               "/activity/",
@@ -205,16 +300,19 @@ export function QuickActions({
               "Activity logged.",
             );
 
-            event.currentTarget.reset();
+            form.reset();
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Log Activity</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Timeline
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Log activity</h4>
           <div className="mt-4 space-y-3">
             <select
               required
               name="client_id"
               defaultValue=""
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               <option value="" disabled>
                 Select client
@@ -228,7 +326,7 @@ export function QuickActions({
             <select
               name="interaction_type"
               defaultValue="note"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               {interactionOptions.map((option) => (
                 <option key={option} value={option}>
@@ -241,7 +339,7 @@ export function QuickActions({
               name="notes"
               rows={4}
               placeholder="What happened?"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
           </div>
           <button
@@ -254,10 +352,11 @@ export function QuickActions({
         </form>
 
         <form
-          className="rounded-[24px] border border-slate-200 bg-white p-5"
+          className="rounded-[28px] border border-(--color-line) bg-white p-5"
           onSubmit={async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
+            const form = event.currentTarget;
+            const formData = new FormData(form);
 
             await submitJson(
               "/client-tags/",
@@ -268,16 +367,19 @@ export function QuickActions({
               "Tag assigned to client.",
             );
 
-            event.currentTarget.reset();
+            form.reset();
           }}
         >
-          <h4 className="text-lg font-semibold text-slate-950">Assign Tag</h4>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Assignment
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-slate-950">Assign tag</h4>
           <div className="mt-4 space-y-3">
             <select
               required
               name="client_id"
               defaultValue=""
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               <option value="" disabled>
                 Select client
@@ -292,7 +394,7 @@ export function QuickActions({
               required
               name="tag_id"
               defaultValue=""
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none"
+              className="w-full rounded-[20px] border border-(--color-line) px-4 py-3 text-sm text-slate-900 outline-none"
             >
               <option value="" disabled>
                 Select tag

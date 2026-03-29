@@ -6,6 +6,7 @@ import { BadgePill } from '@/components/crm/badge-pill';
 import { ClientDetailForm } from '@/components/crm/client-detail-form';
 import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
 import { CRMHero } from '@/components/crm/crm-hero';
+import { PreferencesLink } from '@/components/crm/preferences-link';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useCRMDataSyncRefresh } from '@/hooks/use-crm-sync-refresh';
@@ -84,6 +85,8 @@ function useClientDetail(clientId: string) {
     email?: string | null;
     notes?: string | null;
     phone?: string | null;
+    profile_image_url?: string | null;
+    banner_image_url?: string | null;
     last_contacted_at?: string | null;
     status?: ClientStatus | null;
   }) {
@@ -105,6 +108,8 @@ function useClientDetail(clientId: string) {
               email: payload.email ?? undefined,
               notes: payload.notes ?? client.notes,
               phone: payload.phone ?? undefined,
+              profile_image_url: payload.profile_image_url ?? client.profile_image_url,
+              banner_image_url: payload.banner_image_url ?? client.banner_image_url,
               last_contacted_at: payload.last_contacted_at ?? undefined,
               status: payload.status ?? client.status,
             }
@@ -422,12 +427,14 @@ export default function ClientDetailScreen() {
   const [draftEmail, setDraftEmail] = useState(client?.email ?? '');
   const [draftClientNotes, setDraftClientNotes] = useState(client?.notes ?? '');
   const [draftPhone, setDraftPhone] = useState(client?.phone ?? '');
+  const [draftProfileImageUrl, setDraftProfileImageUrl] = useState(client?.profile_image_url ?? '');
+  const [draftBannerImageUrl, setDraftBannerImageUrl] = useState(client?.banner_image_url ?? '');
   const [draftLastContact, setDraftLastContact] = useState(
     toLocalDatetimeValue(client?.last_contacted_at),
   );
 
-  const handleSaveClientDetails = () =>
-    updateContact({
+  const handleSaveClientDetails = () => {
+    const payload: Parameters<typeof updateContact>[0] = {
       email: draftEmail.trim() || null,
       notes: draftClientNotes.trim() || null,
       phone: draftPhone.trim() || null,
@@ -435,15 +442,28 @@ export default function ClientDetailScreen() {
         ? new Date(draftLastContact).toISOString()
         : null,
       status: draftClientStatus,
-    });
+    };
+
+    if (draftProfileImageUrl.trim()) {
+      payload.profile_image_url = draftProfileImageUrl.trim();
+    }
+
+    if (draftBannerImageUrl.trim()) {
+      payload.banner_image_url = draftBannerImageUrl.trim();
+    }
+
+    return updateContact(payload);
+  };
 
   useEffect(() => {
     setDraftClientStatus(client?.status ?? 'lead');
     setDraftEmail(client?.email ?? '');
     setDraftClientNotes(client?.notes ?? '');
     setDraftPhone(client?.phone ?? '');
+    setDraftProfileImageUrl(client?.profile_image_url ?? '');
+    setDraftBannerImageUrl(client?.banner_image_url ?? '');
     setDraftLastContact(toLocalDatetimeValue(client?.last_contacted_at));
-  }, [client?.email, client?.last_contacted_at, client?.notes, client?.phone, client?.id, client?.status]);
+  }, [client?.banner_image_url, client?.email, client?.last_contacted_at, client?.notes, client?.phone, client?.profile_image_url, client?.id, client?.status]);
 
   if (!client) {
     return null;
@@ -457,25 +477,40 @@ export default function ClientDetailScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}>
       <CRMHero
-        backgroundColor="#F4EFE7"
+        backgroundColor={colorScheme === 'dark' ? '#1E2730' : '#F3E9DC'}
         badge={
           <View style={styles.heroMeta}>
-            <View style={[styles.statusPill, { backgroundColor: tone.bg }]}>
-              <ThemedText style={[styles.statusText, { color: tone.text }]}>
-                {client.status}
-              </ThemedText>
+            <View style={styles.heroMetaGroup}>
+              <View style={[styles.statusPill, { backgroundColor: tone.bg }]}>
+                <ThemedText style={[styles.statusText, { color: tone.text }]}>
+                  {client.status}
+                </ThemedText>
+              </View>
+              <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
+                {isFallback ? 'Fallback' : 'Live'}
+              </BadgePill>
             </View>
-            <BadgePill style={isFallback ? styles.badgeWarn : styles.badgeOk}>
-              {isFallback ? 'Fallback' : 'Live'}
-            </BadgePill>
+            <PreferencesLink compact />
           </View>
         }
-        copy="Detail workflow for client follow-up, contact maintenance, and activity history."
+        copy="Detail workflow for contact maintenance, follow-up discipline, and timeline clarity."
+        metrics={[
+          { label: 'Activity', value: activity.length },
+          { label: 'Tags', value: clientTags.length, tone: 'dark' },
+        ]}
         title={client.name}
       />
 
-      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
-      {success ? <ThemedText style={styles.successText}>{success}</ThemedText> : null}
+      {error ? (
+        <View style={[styles.feedbackCardError, colorScheme === 'dark' && styles.feedbackCardErrorDark]}>
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        </View>
+      ) : null}
+      {success ? (
+        <View style={[styles.feedbackCardSuccess, colorScheme === 'dark' && styles.feedbackCardSuccessDark]}>
+          <ThemedText style={styles.successText}>{success}</ThemedText>
+        </View>
+      ) : null}
       <ConnectionDiagnostics
         apiBaseUrl={apiBaseUrl}
         isFallback={isFallback}
@@ -492,6 +527,10 @@ export default function ClientDetailScreen() {
         setDraftEmail={setDraftEmail}
         draftPhone={draftPhone}
         setDraftPhone={setDraftPhone}
+        draftProfileImageUrl={draftProfileImageUrl}
+        setDraftProfileImageUrl={setDraftProfileImageUrl}
+        draftBannerImageUrl={draftBannerImageUrl}
+        setDraftBannerImageUrl={setDraftBannerImageUrl}
         draftLastContact={draftLastContact}
         setDraftLastContact={setDraftLastContact}
         draftNotes={draftClientNotes}
@@ -540,8 +579,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 32,
-    gap: 16,
+    paddingBottom: 40,
+    gap: 18,
   },
   heroMeta: {
     flexDirection: 'row',
@@ -550,15 +589,45 @@ const styles = StyleSheet.create({
     gap: 12,
     flexWrap: 'wrap',
   },
+  heroMetaGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   statusPill: {
     borderRadius: 999,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
   },
   statusText: {
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
+  },
+  feedbackCardError: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
+    backgroundColor: '#FFF1F2',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  feedbackCardErrorDark: {
+    borderColor: 'rgba(245,194,199,0.24)',
+    backgroundColor: 'rgba(127,29,29,0.22)',
+  },
+  feedbackCardSuccess: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#BCE5D3',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  feedbackCardSuccessDark: {
+    borderColor: 'rgba(188,229,211,0.22)',
+    backgroundColor: 'rgba(6,78,59,0.24)',
   },
   badgeWarn: {
     backgroundColor: '#FEF3C7',
@@ -570,163 +639,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
+    lineHeight: 18,
     color: '#B91C1C',
   },
   successText: {
     fontSize: 13,
+    lineHeight: 18,
     color: '#166534',
-  },
-  section: {
-    borderRadius: 24,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    gap: 12,
-  },
-  detailText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: '#334155',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  actionChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  actionChipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#475569',
-    textTransform: 'capitalize',
-  },
-  quickActionSelected: {
-    backgroundColor: '#DBEAFE',
-    borderColor: '#2563EB',
-  },
-  quickActionSelectedText: {
-    color: '#1D4ED8',
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-  },
-  primaryButton: {
-    borderRadius: 16,
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#F8FAFC',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  activityInput: {
-    minHeight: 92,
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    textAlignVertical: 'top',
-  },
-  activityList: {
-    gap: 12,
-  },
-  activityEditor: {
-    gap: 10,
-  },
-  activityEditorActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-  },
-  activityCard: {
-    borderRadius: 18,
-    padding: 14,
-    backgroundColor: 'rgba(248,250,252,0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.2)',
-    gap: 8,
-  },
-  activityCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  activityMeta: {
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  activityType: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1E293B',
-    textTransform: 'uppercase',
-  },
-  activityDate: {
-    fontSize: 12,
-    color: '#64748B',
-  },
-  deleteLink: {
-    alignSelf: 'flex-end',
-  },
-  deleteLinkText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#B91C1C',
-    textTransform: 'uppercase',
-  },
-  editLink: {
-    alignSelf: 'flex-start',
-  },
-  editLinkText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#2563EB',
-    textTransform: 'uppercase',
-  },
-  activityEditInput: {
-    minHeight: 80,
-  },
-  secondaryInlineButton: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  secondaryInlineButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-    textTransform: 'uppercase',
-  },
-  primaryInlineButton: {
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#0F172A',
-  },
-  primaryInlineButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    textTransform: 'uppercase',
   },
 });
