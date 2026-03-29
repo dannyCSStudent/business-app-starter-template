@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Image, Platform, RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { BadgePill } from '@/components/crm/badge-pill';
 import { ConnectionDiagnostics } from '@/components/crm/connection-diagnostics';
@@ -148,6 +148,7 @@ export default function HomeScreen() {
             <View
               style={[
                 styles.clientBanner,
+                Platform.OS === 'web' ? styles.clientBannerWeb : null,
                 { backgroundColor: appearance.bannerStart },
               ]}>
               {client.banner_image_url && !imageState.banner ? (
@@ -157,49 +158,53 @@ export default function HomeScreen() {
                   onError={() => markImageFailed(client.id, 'banner')}
                 />
               ) : null}
+              <View style={styles.clientBannerOverlay} />
               <View style={[styles.clientBannerGlow, { backgroundColor: appearance.statusGlow }]} />
               <View style={[styles.clientBannerBubble, { backgroundColor: appearance.dot }]} />
               <View style={styles.clientBannerContent}>
-                <View
-                  style={[
-                    styles.avatar,
-                    {
-                      backgroundColor: appearance.avatarStart,
-                      borderColor: 'rgba(255,255,255,0.35)',
-                    },
-                  ]}>
-                  <View style={[styles.avatarInset, { backgroundColor: appearance.avatarEnd }]}>
-                    {client.profile_image_url && !imageState.profile ? (
-                      <Image
-                        source={{ uri: client.profile_image_url }}
-                        style={styles.avatarImage}
-                        onError={() => markImageFailed(client.id, 'profile')}
-                      />
-                    ) : (
-                      <ThemedText style={[styles.avatarText, { color: appearance.avatarText }]}>
-                        {appearance.initials}
+                <View style={styles.clientIdentityRow}>
+                  <View style={styles.clientIdentityGroup}>
+                    <View
+                      style={[
+                        styles.avatar,
+                        {
+                          backgroundColor: appearance.avatarStart,
+                          borderColor: 'rgba(255,255,255,0.5)',
+                        },
+                      ]}>
+                      <View style={[styles.avatarInset, { backgroundColor: appearance.avatarEnd }]}>
+                        {client.profile_image_url && !imageState.profile ? (
+                          <Image
+                            source={{ uri: client.profile_image_url }}
+                            style={styles.avatarImage}
+                            onError={() => markImageFailed(client.id, 'profile')}
+                          />
+                        ) : (
+                          <ThemedText style={[styles.avatarText, { color: appearance.avatarText }]}>
+                            {appearance.initials}
+                          </ThemedText>
+                        )}
+                      </View>
+                    </View>
+
+                    <View style={styles.clientHeaderText}>
+                      <ThemedText style={styles.clientNameOnBanner}>{client.name}</ThemedText>
+                      <ThemedText style={styles.clientSubtleOnBanner}>
+                        {client.email ?? client.phone ?? 'No contact details yet'}
                       </ThemedText>
-                    )}
+                    </View>
+                  </View>
+
+                  <View style={[styles.statusPill, styles.statusPillOnBanner, { backgroundColor: tone.bg }]}>
+                    <ThemedText style={[styles.statusText, { color: tone.text }]}>
+                      {client.status}
+                    </ThemedText>
                   </View>
                 </View>
               </View>
             </View>
 
             <View style={styles.clientBody}>
-              <View style={styles.clientIdentityRow}>
-                <View style={styles.clientHeaderText}>
-                  <ThemedText style={styles.clientName}>{client.name}</ThemedText>
-                  <ThemedText style={styles.clientSubtle}>
-                    {client.email ?? client.phone ?? 'No contact details yet'}
-                  </ThemedText>
-                </View>
-                <View style={[styles.statusPill, { backgroundColor: tone.bg }]}>
-                  <ThemedText style={[styles.statusText, { color: tone.text }]}>
-                    {client.status}
-                  </ThemedText>
-                </View>
-              </View>
-
               <View style={[styles.metaPanel, isDark && styles.metaPanelDark]}>
                 <ThemedText style={styles.metaLabel}>Contact rhythm</ThemedText>
                 <ThemedText style={styles.clientMeta}>
@@ -330,13 +335,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(24,33,43,0.82)',
   },
   clientBanner: {
-    minHeight: 132,
+    minHeight: 156,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.14)',
     overflow: 'hidden',
   },
+  clientBannerWeb: {
+    minHeight: 176,
+  },
   clientBannerImage: {
     ...StyleSheet.absoluteFillObject,
+  },
+  clientBannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15,23,42,0.34)',
   },
   clientBannerGlow: {
     position: 'absolute',
@@ -357,18 +369,24 @@ const styles = StyleSheet.create({
   clientBannerContent: {
     position: 'absolute',
     left: 18,
-    bottom: 0,
-    transform: [{ translateY: 30 }],
+    right: 18,
+    bottom: 18,
   },
   clientBody: {
     padding: 18,
-    paddingTop: 48,
+    paddingTop: 18,
     gap: 14,
   },
   clientIdentityRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
+    gap: 12,
+  },
+  clientIdentityGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     gap: 12,
   },
   avatar: {
@@ -405,9 +423,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#18212B',
   },
+  clientNameOnBanner: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFF8F2',
+  },
   clientSubtle: {
     fontSize: 13,
     color: '#64748B',
+  },
+  clientSubtleOnBanner: {
+    fontSize: 13,
+    color: 'rgba(255,248,242,0.82)',
   },
   clientMeta: {
     fontSize: 13,
@@ -447,6 +474,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
+  statusPillOnBanner: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
   statusText: {
     fontSize: 12,
     fontWeight: '700',
@@ -472,18 +503,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: 'rgba(24,33,43,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.68)',
+    backgroundColor: 'rgba(24,33,43,0.08)',
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   detailLinkDark: {
     borderColor: 'rgba(244,237,228,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   detailLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#18212B',
+    color: '#1D3B4A',
     textTransform: 'uppercase',
   },
   detailLinkTextDark: {

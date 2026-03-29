@@ -52,6 +52,7 @@ function ThemedRootLayout() {
           name="actions/tags"
           options={{ presentation: 'modal', title: 'Manage Tags' }}
         />
+        <Stack.Screen name="client/[id]" options={{ title: 'Details' }} />
         <Stack.Screen name="preferences" options={{ title: 'Preferences' }} />
       </Stack>
       <StatusBar style={isDark ? 'light' : 'dark'} />

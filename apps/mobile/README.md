@@ -63,3 +63,57 @@ Check these in order:
 4. Restart Expo after editing `.env`.
 5. If Android emulator is in use, try `EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:8000`.
 6. If Expo web is in use, try `EXPO_PUBLIC_API_URL_WEB=http://localhost:8000`.
+
+## EAS / Expo Deploy Prep
+
+This app is now scaffolded for EAS builds with:
+
+- app name: `Northstar CRM`
+- slug: `northstar-crm`
+- scheme: `northstarcrm`
+- Android package: `com.businessappstartertemplate.northstarcrm`
+- iOS bundle identifier: `com.businessappstartertemplate.northstarcrm`
+- build profiles in `eas.json`
+
+Before your first hosted build:
+
+1. Install the Expo tools:
+
+```bash
+pnpm add -g eas-cli
+```
+
+2. Log in:
+
+```bash
+eas login
+```
+
+3. Initialize the project from `apps/mobile`:
+
+```bash
+cd apps/mobile
+eas project:init
+```
+
+4. Replace `REPLACE_WITH_EAS_PROJECT_ID` in `app.json` with the generated project id.
+
+5. Set your production API env var for builds:
+
+```bash
+eas env:create --name EXPO_PUBLIC_API_URL --value https://your-render-api.onrender.com
+```
+
+6. Build:
+
+```bash
+eas build --platform android --profile preview
+```
+
+Then later:
+
+```bash
+eas build --platform android --profile production
+```
+
+Use the same Render base URL for `EXPO_PUBLIC_API_URL`. You do not need the local Android/web overrides for hosted builds.
